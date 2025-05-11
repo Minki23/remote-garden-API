@@ -1,0 +1,11 @@
+from models import db
+from models.dtos.users import UserDTO
+
+
+def db_to_user_dto(user: db.UserDb) -> UserDTO:
+    return UserDTO(
+        id=user.id,
+        email=user.email,
+        updated_at=user.updated_at,
+        created_at=user.created_at,
+    )

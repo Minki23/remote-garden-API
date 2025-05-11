@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN pip install uv
+
+COPY pyproject.toml uv.lock ./
+RUN uv pip install --system .
+
+COPY app ./app
+COPY app/migration_manager.sh ./migration_manager.sh
+
+RUN chmod +x ./migration_manager.sh
+
+ENTRYPOINT ["./migration_manager.sh"]
