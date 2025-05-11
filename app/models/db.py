@@ -1,8 +1,10 @@
 from datetime import datetime
-from sqlalchemy import Integer, ForeignKey, String, DateTime, Enum as SqlEnum
+from sqlalchemy import Integer, ForeignKey, String, DateTime, Enum as SqlEnum, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import mapped_column, relationship, Mapped
-from .enums import DeviceType
+from .enums import DeviceType, NotificationType
+from sqlalchemy import Column, Enum
+import enum
 
 Base = declarative_base()
 
@@ -76,6 +78,8 @@ class NotificationDb(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
     message: Mapped[str] = mapped_column(String, nullable=False)
+    read: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    type: Mapped[NotificationType] = mapped_column(SqlEnum(NotificationType), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow

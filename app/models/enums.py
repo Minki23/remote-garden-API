@@ -6,3 +6,8 @@ class DeviceType(str, Enum):
     PUMP = "PUMP"
     LIGHT = "LIGHT"
     OTHER = "OTHER"
+
+class NotificationType(str, Enum):
+    alert = "alert"
+    reminder = "reminder"
+    system = "system"
