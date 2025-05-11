@@ -37,9 +37,7 @@ class GardenDb(Base):
 
     user: Mapped["UserDb"] = relationship("UserDb", back_populates="gardens")
     devices: Mapped[list["DeviceDb"]] = relationship(
-        "DeviceDb",
-        back_populates="garden",
-        cascade="all, delete-orphan"
+        "DeviceDb", back_populates="garden", cascade="all, delete-orphan"
     )
 
 
@@ -57,9 +55,7 @@ class DeviceDb(Base):
 
     garden: Mapped["GardenDb"] = relationship("GardenDb", back_populates="devices")
     readings: Mapped[list["ReadingDb"]] = relationship(
-        "ReadingDb",
-        back_populates="device",
-        cascade="all, delete-orphan"
+        "ReadingDb", back_populates="device", cascade="all, delete-orphan"
     )
 
 

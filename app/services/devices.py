@@ -16,9 +16,7 @@ class DeviceService:
         return db_to_dto(device)
 
     async def create(self, dto: DeviceCreateDTO) -> DeviceDTO:
-        device = await self.repo.create(
-            garden_id=dto.garden_id, mac=dto.mac, type=dto.device_type
-        )
+        device = await self.repo.create(garden_id=dto.garden_id, mac=dto.mac, type=dto.device_type)
         return db_to_dto(device)
 
     async def delete(self, id: int) -> bool:
