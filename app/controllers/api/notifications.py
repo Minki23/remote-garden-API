@@ -14,17 +14,21 @@ router = APIRouter()
 async def get_by_user(service: NotificationServiceDep, user_id: CurrentUserDep):
     return await service.get_by_user(user_id)
 
+
 @router.patch("/{id}/dismiss/", response_model=bool)
 async def dismiss_notification(id: int, service: NotificationServiceDep, user_id: CurrentUserDep):
     return await service.dismiss(id, user_id)
+
 
 @router.get("/alerts/", response_model=list[NotificationDTO])
 async def get_alerts(user_id: CurrentUserDep, service: NotificationServiceDep):
     return await service.get_by_user_and_type(user_id, "alert")
 
+
 @router.get("/reminders/", response_model=list[NotificationDTO])
 async def get_reminders(user_id: CurrentUserDep, service: NotificationServiceDep):
     return await service.get_by_user_and_type(user_id, "reminder")
+
 
 @router.get("/system/", response_model=list[NotificationDTO])
 async def get_system_notifications(user_id: CurrentUserDep, service: NotificationServiceDep):

@@ -2,6 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 from ..enums import NotificationType
 
+
 class NotificationCreateDTO(BaseModel):
     user_id: int
     message: str

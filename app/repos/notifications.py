@@ -7,6 +7,7 @@ from .utils.super_repo import SuperRepo
 
 from sqlalchemy import update
 
+
 class NotificationRepository(SuperRepo[NotificationDb]):
     def __init__(self, db: AsyncSession):
         super().__init__(db, NotificationDb)
@@ -26,12 +27,11 @@ class NotificationRepository(SuperRepo[NotificationDb]):
         )
         await self.db.commit()
         return result.rowcount > 0
-    
+
     async def get_by_user_and_type(self, user_id: int, type_: str) -> List[NotificationDb]:
         result = await self.db.execute(
             select(NotificationDb).where(
-                NotificationDb.user_id == user_id,
-                NotificationDb.type == type_
+                NotificationDb.user_id == user_id, NotificationDb.type == type_
             )
         )
         return result.scalars().all()
