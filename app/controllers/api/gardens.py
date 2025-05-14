@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.core.dependencies import GardenServiceDep, CurrentUserDep
-from app.models.dtos.gardens import GardenCreateDTO, GardenDTO, GardenUpdateDTO
-
+from app.models.dtos.gardens import GardenCreateDTO, GardenDTO, GardenPreferencesUpdateDTO, GardenUpdateDTO
+from app.models.dtos.gardens import GardenConfigureDTO
 router = APIRouter()
 
 
@@ -25,3 +25,22 @@ async def delete_garden(garden_id: int, service: GardenServiceDep, user_id: Curr
 @router.get("/", response_model=list[GardenDTO])
 async def get_my_gardens(service: GardenServiceDep, user_id: CurrentUserDep):
     return await service.get_gardens_by_user(user_id)
+
+
+@router.post("/{garden_id}/configure", response_model=bool)
+async def configure_garden(
+    garden_id: int,
+    config: GardenConfigureDTO,
+    service: GardenServiceDep,
+    user_id: CurrentUserDep
+) -> bool:
+    return await service.configure_garden(garden_id, user_id, config)
+
+@router.patch("/{garden_id}/preferences", response_model=GardenDTO)
+async def update_preferences(
+    garden_id: int,
+    prefs: GardenPreferencesUpdateDTO,
+    service: GardenServiceDep,
+    user_id: CurrentUserDep
+) -> GardenDTO:
+    return await service.update_preferences(garden_id, user_id, prefs)

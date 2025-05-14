@@ -36,6 +36,10 @@ class GardenDb(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+    send_notifications: Mapped[bool] = mapped_column(Boolean, default=False)
+    enable_automation: Mapped[bool] = mapped_column(Boolean, default=False)
+    use_fahrenheit: Mapped[bool] = mapped_column(Boolean, default=False)
+
 
     user: Mapped["UserDb"] = relationship("UserDb", back_populates="gardens")
     devices: Mapped[list["DeviceDb"]] = relationship(

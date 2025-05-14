@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import Depends
 
-from app.services import users, gardens, devices, notifications, readings
+from app.services import users, gardens, devices, notifications, readings, status
 from app.core.db_context import get_async_session
 from core.security.auth import get_current_user_id
 
@@ -25,6 +25,8 @@ def _get_notification_service(db=Depends(get_async_session)) -> notifications.No
 def _get_reading_service(db=Depends(get_async_session)) -> readings.ReadingService:
     return readings.ReadingService(readings.ReadingRepository(db))
 
+def _get_status_service() -> status.StatusService:
+    return status.StatusService()
 
 UserServiceDep = Annotated[users.UserService, Depends(_get_user_service)]
 GardenServiceDep = Annotated[gardens.GardenService, Depends(_get_garden_service)]
@@ -34,3 +36,4 @@ NotificationServiceDep = Annotated[
 ]
 ReadingServiceDep = Annotated[readings.ReadingService, Depends(_get_reading_service)]
 CurrentUserDep = Annotated[int, Depends(get_current_user_id)]
+StatusServiceDep = Annotated[status.StatusService, Depends(_get_status_service)]

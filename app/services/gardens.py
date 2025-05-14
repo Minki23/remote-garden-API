@@ -1,6 +1,6 @@
 from typing import List
 from app.repos.gardens import GardenRepository
-from models.dtos.gardens import GardenDTO, GardenCreateDTO
+from models.dtos.gardens import GardenConfigureDTO, GardenDTO, GardenCreateDTO, GardenPreferencesUpdateDTO
 from exceptions.scheme import AppException
 
 
@@ -30,3 +30,33 @@ class GardenService:
     async def get_gardens_by_user(self, user_id: int) -> List[GardenDTO]:
         gardens = await self.repo.get_all_by_user(user_id)
         return [GardenDTO(**g.__dict__) for g in gardens]
+
+    async def configure_garden(
+        self, garden_id: int, user_id: int, config: GardenConfigureDTO
+    ) -> bool:
+        garden = await self.repo.get_by_id_and_user(garden_id, user_id)
+        if not garden:
+            raise AppException("Garden not found or access denied", 404)
+
+        # MOCK MQTT communication
+        print(f"[MOCK MQTT] Sending SSID={config.ssid}, PASS={config.password} to garden {garden_id}")
+
+        return True
+
+    async def update_preferences(
+        self,
+        garden_id: int,
+        user_id: int,
+        prefs: GardenPreferencesUpdateDTO
+    ) -> GardenDTO:
+        garden = await self.repo.get_by_id_and_user(garden_id, user_id)
+        if not garden:
+            raise AppException("Garden not found or access denied", 404)
+
+        updated = await self.repo.update(
+            garden_id,
+            send_notifications=prefs.send_notifications,
+            enable_automation=prefs.enable_automation,
+            use_fahrenheit=prefs.use_fahrenheit,
+        )
+        return GardenDTO(**updated.__dict__)
