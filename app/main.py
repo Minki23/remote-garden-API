@@ -1,12 +1,17 @@
-from fastapi import FastAPI
-
-from core import lifespan
+from app.exceptions.scheme import AppException
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from app.core import lifespan
 from controllers.pages import page_controller
 from controllers.api import router as api_router
 
-from core.middlewares import cors_middleware
-from core.middlewares import static_middleware
-from exceptions import handler
+from app.core.middlewares import cors_middleware
+from app.core.middlewares import static_middleware
+from app.exceptions import handler
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # HTML/Jinja2 app
 app = FastAPI(lifespan=lifespan.lifespan)

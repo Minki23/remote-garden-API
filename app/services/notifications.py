@@ -1,6 +1,6 @@
-from models.dtos.notifications import NotificationDTO, NotificationCreateDTO
-from mappers.notifications import db_to_dto
-from repos.notifications import NotificationRepository
+from app.models.dtos.notifications import NotificationDTO, NotificationCreateDTO
+from app.mappers.notifications import db_to_dto
+from app.repos.notifications import NotificationRepository
 from fastapi import HTTPException, status
 
 
@@ -17,7 +17,9 @@ class NotificationService:
         return db_to_dto(notif)
 
     async def create(self, dto: NotificationCreateDTO) -> NotificationDTO:
-        notif = await self.repo.create(user_id=dto.user_id, message=dto.message)
+        notif = await self.repo.create(
+            user_id=dto.user_id, message=dto.message, read=False, type=dto.type
+        )
         return db_to_dto(notif)
 
     async def delete(self, id: int) -> bool:

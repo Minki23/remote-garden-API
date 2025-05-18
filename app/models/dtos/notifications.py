@@ -6,6 +6,7 @@ from ..enums import NotificationType
 class NotificationCreateDTO(BaseModel):
     user_id: int
     message: str
+    type: NotificationType
 
 
 class NotificationDTO(BaseModel):

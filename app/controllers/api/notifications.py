@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.core.dependencies import CurrentUserDep, NotificationServiceDep
+from app.core.dependencies import CurrentUserDep, NotificationServiceDep, UserNotificationDep
 from app.models.dtos.notifications import NotificationCreateDTO, NotificationDTO
 
 router = APIRouter()
@@ -16,8 +16,11 @@ async def get_by_user(service: NotificationServiceDep, user_id: CurrentUserDep):
 
 
 @router.patch("/{id}/dismiss/", response_model=bool)
-async def dismiss_notification(id: int, service: NotificationServiceDep, user_id: CurrentUserDep):
-    return await service.dismiss(id, user_id)
+async def dismiss_notification(
+    notif: UserNotificationDep,
+    service: NotificationServiceDep,
+):
+    return await service.dismiss(notif.id, notif.user_id)
 
 
 @router.get("/alerts/", response_model=list[NotificationDTO])

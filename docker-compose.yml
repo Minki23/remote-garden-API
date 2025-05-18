@@ -32,20 +32,56 @@ services:
     ports:
       - "6379:6379"
 
-  # admin-panel:
-  #   build:
-  #     context: .
-  #     dockerfile: admin_app/Dockerfile
-  #   container_name: remote-garden-api-admin-panel
-  #   ports:
-  #     - "8001:8001"
-  #   depends_on:
-  #     - db
-  #   volumes:
-  #     - ./admin_app:/admin_app
-  #     - ./app:/admin_app/app
-  #   environment:
-  #     DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
+  celery:
+    build: .
+    container_name: celery-worker
+    command: celery -A app.core.celery.celery_app worker --loglevel=info -E
+    depends_on:
+      - redis
+    environment:
+      - PYTHONPATH=/app/app
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  scheduler:
+    build: .
+    container_name: celery-scheduler
+    command: celery -A app.core.celery.celery_app beat --scheduler redbeat.RedBeatScheduler --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      - PYTHONPATH=/app/app
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - REDBEAT_REDIS_URL=redis://redis:6379/0
+
+  flower:
+    build: .
+    container_name: flower
+    command: celery -A app.core.celery.celery_app flower --loglevel=info --port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    environment:
+      - PYTHONPATH=/app/app
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  admin-panel:
+    build:
+      context: .
+      dockerfile: admin_app/Dockerfile
+    container_name: remote-garden-api-admin-panel
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+    volumes:
+      - ./admin_app:/admin_app
+      - ./app:/admin_app/app
+    environment:
+      DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
 
   migration:
     build:
@@ -55,15 +91,49 @@ services:
     depends_on:
       - db
     volumes:
-      - ./app:/app
+      - ./:/app
     environment:
       DB_CONNECTION_STRING: "postgresql+psycopg2://user:password@db:5432/garden"
-    entrypoint: ["./migration_manager.sh"]
+    entrypoint: ["./app/utils/scripts/migration_manager.sh"]
     command: ["-c", "sleep infinity"]
     profiles:
       - manual
 
+  format:
+    build:
+      context: .
+      dockerfile: Dockerfile.format
+    container_name: remote-garden-format
+    volumes:
+      - ./app:/app
+    entrypoint: ["./utils/scripts/format.sh"]
+    profiles:
+      - manual
 
+  compile-lock:
+    build:
+      context: .
+      dockerfile: Dockerfile.compilereq
+    container_name: remote-garden-compile-lock
+    volumes:
+      - ./uv.lock:/app/uv.lock
+      - ./pyproject.toml:/app/pyproject.toml:ro
+    profiles:
+      - manual
+
+  mock-data:
+    build: .
+    container_name: remote-garden-mock-data
+    command: ["python", "-m", "app.utils.scripts.mock_data"]
+    depends_on:
+      - db
+    environment:
+      PYTHONPATH: /app
+      DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
+    volumes:
+      - ./:/app
+    profiles:
+      - manual
 
 volumes:
   postgres_data:

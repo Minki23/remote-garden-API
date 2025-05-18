@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from models.dtos.users import UserCreateDTO, UserDTO
-from mappers.users import db_to_user_dto
-from repos.users import UserRepository
-from exceptions.scheme import AppException
+from app.models.dtos.users import UserCreateDTO, UserDTO
+from app.mappers.users import db_to_user_dto
+from app.repos.users import UserRepository
+from app.exceptions.scheme import AppException
 
 
 class UserService:

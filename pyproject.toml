@@ -16,4 +16,7 @@ dependencies = [
     "pymysql>=1.1.1",
     "sqlalchemy>=2.0.40",
     "asyncpg>=0.29.0",
+    "celery",
+    "celery-redbeat",
+    "flower>=2.0.0,<3.0.0"
 ]

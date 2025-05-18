@@ -6,6 +6,7 @@ from . import (
     devices,
     readings,
     notifications,
+    schedules,
 )
 
 router = APIRouter()
@@ -14,3 +15,4 @@ router.include_router(gardens.router, prefix="/gardens", tags=["Gardens"])
 router.include_router(devices.router, prefix="/devices", tags=["Devices"])
 router.include_router(readings.router, prefix="/readings", tags=["Readings"])
 router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
+router.include_router(schedules.router, prefix="/schedules", tags=["Schedules"])

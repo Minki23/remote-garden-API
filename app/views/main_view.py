@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from fastapi.requests import Request
-from core.templates import templates
+from app.core.templates import templates
 
 
 def main_page(req: Request):

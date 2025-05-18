@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.db import DeviceDb
+from app.models.db import DeviceDb
 from .utils.super_repo import SuperRepo
 from sqlalchemy import select
 

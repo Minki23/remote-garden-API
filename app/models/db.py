@@ -40,7 +40,6 @@ class GardenDb(Base):
     enable_automation: Mapped[bool] = mapped_column(Boolean, default=False)
     use_fahrenheit: Mapped[bool] = mapped_column(Boolean, default=False)
 
-
     user: Mapped["UserDb"] = relationship("UserDb", back_populates="gardens")
     devices: Mapped[list["DeviceDb"]] = relationship(
         "DeviceDb", back_populates="garden", cascade="all, delete-orphan"

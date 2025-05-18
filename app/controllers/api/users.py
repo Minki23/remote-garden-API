@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
-from core.dependencies import UserServiceDep, CurrentUserDep
-from models.dtos.users import UserCreateDTO, UserDTO
+from app.core.dependencies import UserServiceDep, CurrentUserDep
+from app.models.dtos.users import UserCreateDTO, UserDTO
 
 router = APIRouter()
 

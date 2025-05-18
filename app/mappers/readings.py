@@ -1,5 +1,5 @@
-from models.db import ReadingDb
-from models.dtos.readings import ReadingDTO
+from app.models.db import ReadingDb
+from app.models.dtos.readings import ReadingDTO
 
 
 def db_to_dto(reading: ReadingDb) -> ReadingDTO:

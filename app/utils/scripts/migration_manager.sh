@@ -11,17 +11,17 @@ help_message() {
 
 generate_migration() {
     echo "Generating migration..."
-    alembic revision --autogenerate
+    alembic -c ./app/alembic.ini revision --autogenerate
 }
 
 apply_migration() {
     echo "Applying migration..."
-    alembic upgrade head
+    alembic -c ./app/alembic.ini upgrade head
 }
 
 downgrade_migration() {
     echo "Downgrading last migration..."
-    alembic downgrade -1
+    alembic -c ./app/alembic.ini downgrade -1
 }
 
 all() {

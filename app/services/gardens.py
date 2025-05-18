@@ -1,29 +1,43 @@
 from typing import List
+from app.models.dtos.devices import DeviceCreateDTO
+from app.models.enums import DeviceType
 from app.repos.gardens import GardenRepository
-from models.dtos.gardens import GardenConfigureDTO, GardenDTO, GardenCreateDTO, GardenPreferencesUpdateDTO
-from exceptions.scheme import AppException
+from app.services.devices import DeviceService
+from app.models.dtos.gardens import (
+    GardenConfigureDTO,
+    GardenDTO,
+    GardenCreateDTO,
+    GardenPreferencesUpdateDTO,
+)
+from app.exceptions.scheme import AppException
 
 
 class GardenService:
-    def __init__(self, repo: GardenRepository):
+    def __init__(self, repo: GardenRepository, device_service: DeviceService):
         self.repo = repo
+        self.device_service = device_service
 
     async def create_garden(self, dto: GardenCreateDTO, user_id: int) -> GardenDTO:
         garden = await self.repo.create(user_id=user_id, name=dto.name)
-        return GardenDTO(**garden.__dict__)
+        garden_dto = GardenDTO(**garden.__dict__)
+
+        device_dtos = [
+            DeviceCreateDTO(
+                garden_id=garden_dto.id,
+                mac=f"{DeviceType.__name__}-{type.name}-{garden_dto.id}",
+                type=type,
+            )
+            for type in DeviceType
+        ]
+
+        await self.device_service.create_all_for_garden(garden_dto.id, device_dtos)
+
+        return garden_dto
 
     async def delete_garden(self, garden_id: int, user_id: int) -> None:
-        garden = await self.repo.get_by_id_and_user(garden_id, user_id)
-        if not garden:
-            raise AppException(message="Garden not found or access denied", status_code=404)
-
         await self.repo.delete(garden_id)
 
-    async def update_garden_name(self, garden_id: int, name: str, user_id: int) -> GardenDTO:
-        garden = await self.repo.get_by_id_and_user(garden_id, user_id)
-        if not garden:
-            raise AppException(message="Garden not found or access denied", status_code=404)
-
+    async def update_garden_name(self, garden_id: int, name: str) -> GardenDTO:
         updated = await self.repo.update(garden_id, name=name)
         return GardenDTO(**updated.__dict__)
 
@@ -31,28 +45,16 @@ class GardenService:
         gardens = await self.repo.get_all_by_user(user_id)
         return [GardenDTO(**g.__dict__) for g in gardens]
 
-    async def configure_garden(
-        self, garden_id: int, user_id: int, config: GardenConfigureDTO
-    ) -> bool:
-        garden = await self.repo.get_by_id_and_user(garden_id, user_id)
-        if not garden:
-            raise AppException("Garden not found or access denied", 404)
-
-        # MOCK MQTT communication
-        print(f"[MOCK MQTT] Sending SSID={config.ssid}, PASS={config.password} to garden {garden_id}")
+    async def configure_garden(self, garden_id: int, config: GardenConfigureDTO) -> bool:
+        print(
+            f"[MOCK MQTT] Sending SSID={config.ssid}, PASS={config.password} to garden {garden_id}"
+        )
 
         return True
 
     async def update_preferences(
-        self,
-        garden_id: int,
-        user_id: int,
-        prefs: GardenPreferencesUpdateDTO
+        self, garden_id: int, prefs: GardenPreferencesUpdateDTO
     ) -> GardenDTO:
-        garden = await self.repo.get_by_id_and_user(garden_id, user_id)
-        if not garden:
-            raise AppException("Garden not found or access denied", 404)
-
         updated = await self.repo.update(
             garden_id,
             send_notifications=prefs.send_notifications,

@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.db import UserDb
+from app.models.db import UserDb
 from .utils.super_repo import SuperRepo
 
 

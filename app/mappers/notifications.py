@@ -1,5 +1,5 @@
-from models.db import NotificationDb
-from models.dtos.notifications import NotificationDTO
+from app.models.db import NotificationDb
+from app.models.dtos.notifications import NotificationDTO
 
 
 def db_to_dto(notification: NotificationDb) -> NotificationDTO:
