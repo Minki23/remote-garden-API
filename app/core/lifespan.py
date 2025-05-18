@@ -1,9 +1,13 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-
+from app.core.mqtt.mqtt_client import mqtt_listener
+import asyncio
 # from db import context
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,9 +19,13 @@ async def lifespan(app: FastAPI):
     implemented.
     """
 
-    # fx db initialization
-    # context.init()
+    logger.info("Starting MQTT listener...")
+    logger.info("Starting lifespan of the app...")
+
+    task = asyncio.create_task(mqtt_listener())
 
     # before start
     yield
     # before stop
+
+    task.cancel()

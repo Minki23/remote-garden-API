@@ -1,4 +1,13 @@
 services:
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt-broker
+    ports:
+      - "1884:1883"  # MQTT
+    volumes:
+      - ./mqtt_config:/mosquitto/config
+    restart: unless-stopped
+
   app:
     build: .
     container_name: remote-garden-api
@@ -68,20 +77,20 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
-  admin-panel:
-    build:
-      context: .
-      dockerfile: admin_app/Dockerfile
-    container_name: remote-garden-api-admin-panel
-    ports:
-      - "8001:8001"
-    depends_on:
-      - db
-    volumes:
-      - ./admin_app:/admin_app
-      - ./app:/admin_app/app
-    environment:
-      DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
+  # admin-panel:
+  #   build:
+  #     context: .
+  #     dockerfile: admin_app/Dockerfile
+  #   container_name: remote-garden-api-admin-panel
+  #   ports:
+  #     - "8001:8001"
+  #   depends_on:
+  #     - db
+  #   volumes:
+  #     - ./admin_app:/admin_app
+  #     - ./app:/admin_app/app
+  #   environment:
+  #     DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
 
   migration:
     build:
@@ -134,6 +143,20 @@ services:
       - ./:/app
     profiles:
       - manual
+
+  mqtt-mock-publisher:
+    build: .
+    container_name: mqtt-mock-publisher
+    command: ["python", "-m", "app.utils.scripts.mock_device_publisher"]
+    depends_on:
+      - mqtt-broker
+    environment:
+      PYTHONPATH: /app
+    volumes:
+      - ./:/app
+    profiles:
+      - manual
+
 
 volumes:
   postgres_data:

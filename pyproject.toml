@@ -18,5 +18,6 @@ dependencies = [
     "asyncpg>=0.29.0",
     "celery",
     "celery-redbeat",
-    "flower>=2.0.0,<3.0.0"
+    "flower>=2.0.0,<3.0.0",
+    "aiomqtt>=1.0.0",
 ]
