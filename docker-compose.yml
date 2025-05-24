@@ -5,7 +5,7 @@ services:
     ports:
       - "1884:1883"  # MQTT
     volumes:
-      - ./mqtt_config:/mosquitto/config
+      - ./app/utils/mock_mqtt/mqtt_config:/mosquitto/config
     restart: unless-stopped
 
   app:
@@ -49,6 +49,7 @@ services:
       - redis
     environment:
       - PYTHONPATH=/app/app
+      - DB_CONNECTION_STRING=postgresql+asyncpg://user:password@db:5432/garden
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
@@ -60,6 +61,7 @@ services:
       - redis
     environment:
       - PYTHONPATH=/app/app
+      - DB_CONNECTION_STRING=postgresql+asyncpg://user:password@db:5432/garden
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - REDBEAT_REDIS_URL=redis://redis:6379/0
@@ -74,6 +76,7 @@ services:
       - redis
     environment:
       - PYTHONPATH=/app/app
+      - DB_CONNECTION_STRING=postgresql+asyncpg://user:password@db:5432/garden
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
@@ -147,7 +150,7 @@ services:
   mqtt-mock-publisher:
     build: .
     container_name: mqtt-mock-publisher
-    command: ["python", "-m", "app.utils.scripts.mock_device_publisher"]
+    command: ["python", "-m", "app.utils.mock_mqtt.mock_device_publisher"]
     depends_on:
       - mqtt-broker
     environment:
