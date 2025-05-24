@@ -46,3 +46,4 @@ async def get_last_by_device_type(
         garden_id=garden.id,
         type=type,
     )
+

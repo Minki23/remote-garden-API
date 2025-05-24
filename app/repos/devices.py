@@ -1,6 +1,6 @@
 from app.models.enums import DeviceType
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.db import DeviceDb
+from app.models.db import DeviceDb, GardenDb
 from .utils.super_repo import SuperRepo
 from sqlalchemy import select
 
@@ -18,6 +18,16 @@ class DeviceRepository(SuperRepo[DeviceDb]):
             select(DeviceDb)
             .where(DeviceDb.garden_id == garden_id)
             .where(DeviceDb.type == type)
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+    
+    async def get_by_id_and_user(self, device_id: int, user_id: int) -> DeviceDb | None:
+        result = await self.db.execute(
+            select(DeviceDb)
+            .join(GardenDb, DeviceDb.garden_id == GardenDb.id)
+            .where(DeviceDb.id == device_id)
+            .where(GardenDb.user_id == user_id)
             .limit(1)
         )
         return result.scalar_one_or_none()

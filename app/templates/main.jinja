@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Remote Garden Dashboard</title>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
         body {
             font-family: "Segoe UI", sans-serif;
@@ -25,16 +29,29 @@
             gap: 1rem;
             flex-wrap: wrap;
         }
-        .link-button {
+        .link-button, .copy-button {
             background-color: #2b6cb0;
             color: white;
             padding: 1rem 2rem;
             text-decoration: none;
+            border: none;
             border-radius: 8px;
+            cursor: pointer;
             transition: background-color 0.2s ease;
+            font-size: 1rem;
         }
-        .link-button:hover {
+        .link-button:hover, .copy-button:hover {
             background-color: #2c5282;
+        }
+        #login-status {
+            margin-top: 1rem;
+            color: #2d3748;
+            font-weight: bold;
+        }
+        /* przycisk kopiowania domyślnie ukryty */
+        #copy-idtoken-btn {
+            display: none;
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -42,11 +59,74 @@
     <h1>🌱 Remote Garden Control Panel</h1>
     <h3>Server time: {{ date }}</h3>
 
+    <!-- Google login button -->
+    <div id="g_id_onload"
+         data-client_id="12068635644-6qnjc47pg2944ohf1uo3osgjtgbbljuk.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+    </div>
+
+    <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+    </div>
+
+    <div id="login-status"></div>
+
+    <button id="copy-idtoken-btn" class="copy-button">📋 Copy ID Token</button>
+
     <div class="button-container">
-        <a class="link-button" href="/check">🔐 Check Auth Page</a>
         <a class="link-button" href="/docs" target="_blank">📘 Swagger Docs</a>
         <a class="link-button" href="http://localhost:5555" target="_blank">📈 Flower Dashboard</a>
         <a class="link-button" href="http://localhost:8001/admin" target="_blank">🛠 Admin Panel</a>
     </div>
+
+    <script>
+      let lastIdToken = "";
+
+      async function handleCredentialResponse(response) {
+        const idToken = response.credential;
+        lastIdToken = idToken;  // zapamiętujemy, żeby można było skopiować
+
+        try {
+          const res = await fetch("/api/auth/login/google", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id_token: idToken })
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            document.getElementById("login-status").textContent = "✅ Zalogowano pomyślnie!";
+            localStorage.setItem("access_token", data.access_token);
+
+            // pokaż przycisk kopiowania
+            const copyBtn = document.getElementById("copy-idtoken-btn");
+            copyBtn.style.display = "inline-block";
+            copyBtn.addEventListener("click", copyIdTokenToClipboard);
+          } else {
+            document.getElementById("login-status").textContent = "❌ Błąd logowania: " + data.detail;
+          }
+        } catch (error) {
+          document.getElementById("login-status").textContent = "❌ Błąd żądania: " + error.message;
+        }
+      }
+
+      function copyIdTokenToClipboard() {
+        if (!lastIdToken) return;
+        navigator.clipboard.writeText(lastIdToken)
+          .then(() => {
+            alert("ID Token skopiowany do schowka!");
+          })
+          .catch(err => {
+            alert("Błąd kopiowania: " + err);
+          });
+      }
+    </script>
 </body>
 </html>

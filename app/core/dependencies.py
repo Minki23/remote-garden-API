@@ -1,9 +1,6 @@
-from app.core.celery.celery_app import celery_app
 from app.repos.schedules import ScheduleRepository
 from fastapi import Path, Body, Depends
 from typing import Annotated
-from redis import Redis
-from sqlalchemy import select
 
 from app.exceptions.scheme import AppException
 from app.models.enums import ScheduleActionType
@@ -18,10 +15,11 @@ from app.mappers.notifications import db_to_dto as db_notification_to_dto
 from app.repos.gardens import GardenRepository
 from app.repos.devices import DeviceRepository
 from app.repos.notifications import NotificationRepository
-from app.services import users, gardens, devices, notifications, readings, status
+from app.services import users, gardens, devices, notifications, readings, status, auth
 from app.services.schedules import ScheduleService
 from app.core.db_context import get_async_session
-from app.core.security.auth import get_current_user_id
+from app.core.security.deps import get_current_user_id
+from fastapi import Security
 
 # --- Service Factories ---
 
@@ -50,6 +48,9 @@ async def _get_reading_service(db=Depends(get_async_session)) -> readings.Readin
 
 async def _get_status_service() -> status.StatusService:
     return status.StatusService()
+
+async def _get_auth_service(db=Depends(get_async_session)) -> auth.AuthService:
+    return auth.AuthService(users.UserRepository(db))
 
 
 # _redis_client = Redis(host="redis", port=6379, decode_responses=True)
@@ -143,10 +144,11 @@ NotificationServiceDep = Annotated[
 ReadingServiceDep = Annotated[readings.ReadingService, Depends(_get_reading_service)]
 StatusServiceDep = Annotated[status.StatusService, Depends(_get_status_service)]
 ScheduleServiceDep = Annotated[ScheduleService, Depends(_get_schedule_service)]
+AuthServiceDep = Annotated[auth.AuthService, Depends(_get_auth_service)]
 
 GardenDep = Annotated[GardenDTO, Depends(_get_garden_for_user)]
 UserNotificationDep = Annotated[NotificationDTO, Depends(_get_user_notification)]
 UserDeviceDep = Annotated[DeviceDTO, Depends(_get_user_device)]
 WeeklyCronDep = Annotated[tuple[str, ScheduleActionType], Depends(_convert_weekly_dto_to_cron)]
-CurrentUserDep = Annotated[int, Depends(get_current_user_id)]
+CurrentUserDep = Annotated[int, Security(get_current_user_id)]
 UserScheduleDep = Annotated[str, Depends(_get_user_schedule)]

@@ -10,7 +10,13 @@ class Config:
     DB_CONNECTION_STRING: str
     COOKIES_KEY_NAME: str
     SESSION_TIME: timedelta
-    HASH_SALT: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    SECRET_KEY: str = getenv("SECRET", "default_secret_key")
+
+    GOOGLE_CLIENT_ID: str = getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET: str = getenv("GOOGLE_CLIENT_SECRET")
+    GOOGLE_REDIRECT_URI: str = getenv("GOOGLE_REDIRECT_URI")
 
     @staticmethod
     def get_config() -> Config:
@@ -22,9 +28,8 @@ class Config:
 
         cookies_key_name = "session_token"
         session_time = timedelta(days=30)
-        hash_salt = getenv("HASH_SALT", "SomeRandomStringHere")
 
-        return Config(db_connection_string, cookies_key_name, session_time, hash_salt)
+        return Config(db_connection_string, cookies_key_name, session_time)
 
 
 CONFIG = Config.get_config()

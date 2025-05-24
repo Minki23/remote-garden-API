@@ -1,4 +1,3 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
 from app.models.dtos.users import UserCreateDTO, UserDTO
@@ -13,19 +12,24 @@ class UserService:
 
     async def create_user(self, data: UserCreateDTO) -> UserDTO:
         try:
-            user = await self.repo.create(email=data.email)
+            user = await self.repo.create(email=data.email, name=data.name)
         except IntegrityError:
             raise AppException(message="Email already exists", status_code=422)
-
         return db_to_user_dto(user)
 
-    async def delete_user(self, user_id: int) -> None:
-        deleted = await self.repo.delete(user_id)
-        if not deleted:
+    async def get_user_by_email(self, email: str) -> UserDTO:
+        user = await self.repo.get_by_email(email)
+        if not user:
             raise AppException(message="User not found", status_code=404)
+        return db_to_user_dto(user)
 
     async def get_user(self, user_id: int) -> UserDTO:
         user = await self.repo.get_by_id(user_id)
         if not user:
             raise AppException(message="User not found", status_code=404)
         return db_to_user_dto(user)
+
+    async def delete_user(self, user_id: int) -> None:
+        deleted = await self.repo.delete(user_id)
+        if not deleted:
+            raise AppException(message="User not found", status_code=404)

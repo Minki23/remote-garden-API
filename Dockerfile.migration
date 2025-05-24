@@ -9,6 +9,6 @@ RUN uv pip install --system .
 
 COPY app/ ./app
 
-RUN chmod +x ./app/utils/migration_manager.sh
+RUN chmod +x ./app/utils/scripts/migration_manager.sh
 
-ENTRYPOINT ["./app/utils/migration_manager.sh"]
+ENTRYPOINT ["./app/utils/scripts/migration_manager.sh"]
