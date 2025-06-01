@@ -1,83 +1,94 @@
 import asyncio
+import logging
 import random
+import uuid
 from datetime import datetime
 
-from app.models.enums import DeviceType, ScheduleActionType, NotificationType
-from app.models.dtos.users import UserCreateDTO
-from app.models.dtos.gardens import GardenCreateDTO
-from app.models.dtos.readings import ReadingCreateDTO
-from app.models.dtos.notifications import NotificationCreateDTO
-
-from app.core.db_context import async_session_maker
-from app.services.users import UserService
-from app.services.gardens import GardenService
-from app.services.devices import DeviceService
-from app.services.readings import ReadingService
-from app.services.notifications import NotificationService
-from app.services.schedules import ScheduleService
-
-from app.repos.users import UserRepository
-from app.repos.gardens import GardenRepository
-from app.repos.devices import DeviceRepository
-from app.repos.readings import ReadingRepository
-from app.repos.notifications import NotificationRepository
-from app.repos.schedules import ScheduleRepository
-
+from app.models.enums import DeviceType, NotificationType
 from app.models.db import UserDb, GardenDb, DeviceDb, ReadingDb, NotificationDb
+from app.core.db_context import async_session_maker
+
+# Logger setup
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 async def mock():
-    async with async_session_maker() as db:
-        await db.execute(NotificationDb.__table__.delete())
-        await db.execute(ReadingDb.__table__.delete())
-        await db.execute(DeviceDb.__table__.delete())
-        await db.execute(GardenDb.__table__.delete())
-        await db.execute(UserDb.__table__.delete())
-        await db.commit()
+    async with async_session_maker() as session:
+        # Clean all data
+        await session.execute(NotificationDb.__table__.delete())
+        await session.execute(ReadingDb.__table__.delete())
+        await session.execute(DeviceDb.__table__.delete())
+        await session.execute(GardenDb.__table__.delete())
+        await session.execute(UserDb.__table__.delete())
+        await session.commit()
+        logger.info("Database cleared.")
 
-        user_service = UserService(UserRepository(db))
-        device_service = DeviceService(DeviceRepository(db))
-        garden_service = GardenService(GardenRepository(db), device_service)
-        reading_service = ReadingService(ReadingRepository(db))
-        notif_service = NotificationService(NotificationRepository(db))
-        schedule_service = ScheduleService(ScheduleRepository())
+        for i in range(3):
+            user = UserDb(
+                email=f"user{i}@example.com",
+                google_sub=None,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            session.add(user)
+            await session.flush()  # get user.id
 
-        for i in range(10):
-            email = f"user{i}@example.com"
-            try:
-                user = await user_service.create_user(UserCreateDTO(email=email))
-            except Exception:
-                continue
+            logger.info(f"Created user {user.email}")
 
             for g in range(2):
-                garden = await garden_service.create_garden(
-                    GardenCreateDTO(name=f"{email}_garden_{g}"), user.id
+                garden = GardenDb(
+                    user_id=user.id,
+                    name=f"{user.email}_garden_{g}",
+                    send_notifications=False,
+                    enable_automation=True,
+                    use_fahrenheit=False,
+                    created_at=datetime.utcnow(),
+                    updated_at=datetime.utcnow()
                 )
+                session.add(garden)
+                await session.flush()  # get garden.id
 
-                devices = await device_service.get_all_for_garden(garden.id)
+                logger.info(f"  Created garden {garden.name}")
 
-                for device in devices:
-                    for _ in range(10):
-                        await reading_service.create(
-                            ReadingCreateDTO(
-                                device_id=device.id, value=f"{random.uniform(10, 100):.2f}"
-                            )
-                        )
-
-                # 2 schedules per garden
-                for action in [ScheduleActionType.START_WATERING, ScheduleActionType.OPEN_ROOF]:
-                    minute = random.randint(0, 59)
-                    hour = random.randint(0, 23)
-                    cron = f"{minute} {hour} * * *"
-                    schedule_service.create(garden.id, cron, action)
-
-            # 3 notifications per user
-            for notif_type in NotificationType:
-                await notif_service.create(
-                    NotificationCreateDTO(
-                        user_id=user.id, message=f"Mock {notif_type.value} message", type=notif_type
+                for device_type in DeviceType:
+                    device = DeviceDb(
+                        garden_id=garden.id,
+                        mac=str(uuid.uuid4()),
+                        type=device_type,
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow()
                     )
+                    session.add(device)
+                    await session.flush()  # get device.id
+
+                    logger.info(f"    Created device {device.type.value} for garden {garden.name}")
+
+                    for _ in range(3):
+                        reading = ReadingDb(
+                            device_id=device.id,
+                            value=f"{random.uniform(10, 100):.2f}",
+                            timestamp=datetime.utcnow()
+                        )
+                        session.add(reading)
+
+                logger.info(f"    Added readings for all devices in {garden.name}")
+
+            for notif_type in NotificationType:
+                notif = NotificationDb(
+                    user_id=user.id,
+                    message=f"Test {notif_type.value} notification",
+                    type=notif_type,
+                    read=False,
+                    created_at=datetime.utcnow(),
+                    updated_at=datetime.utcnow()
                 )
+                session.add(notif)
+
+            logger.info(f"  Created notifications for {user.email}")
+
+        await session.commit()
+        logger.info("Mock data generation complete.")
 
 
 if __name__ == "__main__":
