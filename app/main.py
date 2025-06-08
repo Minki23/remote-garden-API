@@ -12,7 +12,7 @@ from controllers.pages import page_controller
 from controllers.api import router as api_router
 from controllers.websocket import router as ws_router
 from fastapi.middleware.cors import CORSMiddleware
-
+from controllers.live import router as live_router
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -54,3 +54,4 @@ handler.add_json(app)
 app.include_router(page_controller.router)
 app.include_router(api_router, prefix="/api")
 app.include_router(ws_router, prefix="/ws")
+app.include_router(live_router, prefix="/live")

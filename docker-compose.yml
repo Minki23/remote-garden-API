@@ -18,11 +18,16 @@ services:
       HASH_SALT: "s0m3S3cr3tSalt"
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-your-google-client-id}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-your-google-client-secret-id}"
+      RTSP_URL: "rtsp://cam.local:8554/live"
+      USE_MOCK_CAMERA: "0"
     ports:
       - "3000:3000"
     depends_on:
       - db
-
+    extra_hosts:
+      - "cam.local:172.30.59.180" # change on zerotier one if needed
+    devices:
+      - "/dev/video0:/dev/video0" # change if want mock and camera is available on different path
   db:
     image: postgres:15
     container_name: remote-garden-db

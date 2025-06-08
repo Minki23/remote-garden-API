@@ -17,6 +17,8 @@ class Config:
     GOOGLE_CLIENT_ID: str = getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET: str = getenv("GOOGLE_CLIENT_SECRET")
     GOOGLE_REDIRECT_URI: str = getenv("GOOGLE_REDIRECT_URI")
+    RTSP_URL: str = getenv("RTSP_URL")
+    USE_MOCK_CAMERA: bool = False
 
     @staticmethod
     def get_config() -> Config:
@@ -28,8 +30,9 @@ class Config:
 
         cookies_key_name = "session_token"
         session_time = timedelta(days=30)
+        use_mock = getenv("USE_MOCK_CAMERA", "0").lower() in ("1", "true", "yes")
 
-        return Config(db_connection_string, cookies_key_name, session_time)
+        return Config(db_connection_string, cookies_key_name, session_time, USE_MOCK_CAMERA=use_mock,)
 
 
 CONFIG = Config.get_config()

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>🎥 WebRTC Dummy Video</title>
+  <style>
+    body { 
+      font-family: sans-serif; 
+      padding: 20px; 
+      background: #f0f0f0;
+    }
+    video { 
+      width: 720px; 
+      height: 540px;
+      background: black; 
+      border: 2px solid #333;
+      border-radius: 8px;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      background: #fff;
+      border-radius: 4px;
+      border-left: 4px solid #007bff;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎩 Dummy Video przez WebRTC</h2>
+  <div class="status" id="status">🔄 Łączenie...</div>
+  <video id="video" autoplay playsinline muted></video>
+
+  <script>
+    const video = document.getElementById("video");
+    const status = document.getElementById("status");
+    
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    });
+
+    pc.onconnectionstatechange = () => {
+      console.log("🔗 Stan połączenia:", pc.connectionState);
+      status.textContent = `🔗 Stan: ${pc.connectionState}`;
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.log("🧊 Stan ICE:", pc.iceConnectionState);
+    };
+
+    pc.ontrack = (event) => {
+      console.log("🎥 Otrzymano track:", event.track);
+      status.textContent = "✅ Stream otrzymany!";
+      if (event.streams && event.streams[0]) {
+        video.srcObject = event.streams[0];
+        console.log("📺 Video źródło ustawione");
+      } else {
+        const stream = new MediaStream([event.track]);
+        video.srcObject = stream;
+        console.log("📺 Video źródło ustawione (fallback)");
+      }
+    };
+
+    let iceCandidatesComplete = false;
+    let offerSent = false;
+
+    pc.onicecandidate = (event) => {
+      console.log("🧊 ICE Candidate:", event.candidate);
+      if (event.candidate === null && !iceCandidatesComplete && !offerSent) {
+        iceCandidatesComplete = true;
+        offerSent = true;
+        console.log("🧊 ICE gathering zakończone");
+        sendOffer();
+      }
+    };
+
+    pc.addTransceiver("video", { direction: "recvonly" });
+
+    async function sendOffer() {
+      try {
+        console.log("📤 Wysyłanie oferty do serwera...");
+        const res = await fetch("http://localhost:3000/live/offer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sdp: pc.localDescription.sdp,
+            type: pc.localDescription.type
+          })
+        });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const answer = await res.json();
+        if (pc.signalingState === "have-local-offer") {
+          await pc.setRemoteDescription(new RTCSessionDescription(answer));
+          console.log("✅ RemoteDescription ustawiony");
+          status.textContent = "✅ Połączenie nawiązane, oczekiwanie na stream...";
+        } else {
+          console.warn("⚠️ Pomijam setRemoteDescription - zły stan:", pc.signalingState);
+          status.textContent = "⚠️ Połączenie już aktywne";
+        }
+      } catch (error) {
+        console.error("❌ Błąd:", error);
+        status.textContent = `❌ Błąd: ${error.message}`;
+      }
+    }
+
+    async function start() {
+      try {
+        console.log("📡 Tworzenie oferty...");
+        status.textContent = "📡 Tworzenie oferty...";
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        console.log("📩 Oferta ustawiona, czekam na ICE candidates...");
+        status.textContent = "📩 Oferta utworzona, zbieranie ICE candidates...";
+        setTimeout(() => {
+          if (!iceCandidatesComplete && !offerSent) {
+            console.log("⏰ Timeout ICE gathering, wysyłam ofertę");
+            offerSent = true;
+            sendOffer();
+          }
+        }, 3000);
+      } catch (error) {
+        console.error("❌ Błąd tworzenia oferty:", error);
+        status.textContent = `❌ Błąd: ${error.message}`;
+      }
+    }
+
+    start();
+  </script>
+</body>
+</html>
