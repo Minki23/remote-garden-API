@@ -1,37 +1,51 @@
-from fastapi import Request, APIRouter
-from fastapi.responses import JSONResponse
-from aiortc import RTCPeerConnection, RTCSessionDescription
-from app.services.camera import VideoTrack, MockVideoTrack
-import logging
+from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from app.core.config import CONFIG
 
+import time
+import cv2
+import av
 
 router = APIRouter()
-pcs = set()
-logger = logging.getLogger(__name__)
 
-@router.post("/offer")
-async def offer(request: Request):
-    params = await request.json()
-    offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
+def get_frame_generator():
+    if CONFIG.USE_MOCK_CAMERA:
+        cap = cv2.VideoCapture(0)
 
-    pc = RTCPeerConnection()
-    pcs.add(pc)
+        def frame_gen():
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    time.sleep(0.05)
+                    continue
+                ret, jpeg = cv2.imencode('.jpg', frame)
+                if not ret:
+                    continue
+                yield (
+                    b"--frame\r\n"
+                    b"Content-Type: image/jpeg\r\n\r\n" + jpeg.tobytes() + b"\r\n"
+                )
 
-    @pc.on("connectionstatechange")
-    async def on_connectionstatechange():
-        logger.info("Connection: %s", pc.connectionState)
-        if pc.connectionState == "closed":
-            pcs.discard(pc)
+        return frame_gen()
 
-    track = MockVideoTrack() if CONFIG.USE_MOCK_CAMERA else VideoTrack()
-    pc.addTrack(track)
+    else:
+        container = av.open(CONFIG.RTSP_URL, options={"rtsp_transport": "tcp"})
+        stream = container.streams.video[0]
 
-    await pc.setRemoteDescription(offer)
-    answer = await pc.createAnswer()
-    await pc.setLocalDescription(answer)
+        def frame_gen():
+            for packet in container.demux(stream):
+                for frame in packet.decode():
+                    img = frame.to_ndarray(format="bgr24")
+                    ret, jpeg = cv2.imencode('.jpg', img)
+                    if not ret:
+                        continue
+                    yield (
+                        b"--frame\r\n"
+                        b"Content-Type: image/jpeg\r\n\r\n" + jpeg.tobytes() + b"\r\n"
+                    )
 
-    return JSONResponse({
-        "sdp": pc.localDescription.sdp,
-        "type": pc.localDescription.type
-    })
+        return frame_gen()
+
+@router.get("/video")
+async def video_feed():
+    return StreamingResponse(get_frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame")
