@@ -1,4 +1,5 @@
 from typing import List
+from app.core.mqtt.mqtt_publisher import MqttTopicPublisher
 from app.models.dtos.devices import DeviceCreateDTO
 from app.models.enums import DeviceType
 from app.repos.gardens import GardenRepository
@@ -46,10 +47,12 @@ class GardenService:
         return [GardenDTO(**g.__dict__) for g in gardens]
 
     async def configure_garden(self, garden_id: int, config: GardenConfigureDTO) -> bool:
-        print(
-            f"[MOCK MQTT] Sending SSID={config.ssid}, PASS={config.password} to garden {garden_id}"
-        )
+        payload = {
+            "ssid": config.ssid,
+            "password": config.password
+        }
 
+        await MqttTopicPublisher().publish(f"device/{garden_id}/configure", payload)
         return True
 
     async def update_preferences(

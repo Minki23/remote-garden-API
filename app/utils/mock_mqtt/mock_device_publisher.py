@@ -109,36 +109,52 @@ async def publish_mock_data(client: Client):
 
         await asyncio.sleep(5)
 
+async def handle_control(payload: dict):
+    action = payload.get("action")
+
+    match action:
+        case ControlActionType.TURN_ON:
+            state.light_on = True
+        case ControlActionType.TURN_OFF:
+            state.light_on = False
+        case ControlActionType.OPEN_ROOF:
+            state.roof_open = True
+        case ControlActionType.CLOSE_ROOF:
+            state.roof_open = False
+        case ControlActionType.INCREASE_TEMPERATURE:
+            state.temperature_offset += 5
+        case ControlActionType.DECREASE_TEMPERATURE:
+            state.temperature_offset = max(0, state.temperature_offset - 5)
+        case ControlActionType.START_WATERING:
+            asyncio.create_task(state.start_watering())
+        case ControlActionType.RESET_ESP:
+            logger.info("ESP reset requested (no-op in mock).")
+        case _:
+            logger.warning(f"Unknown action: {action}")
+
+
+async def handle_configure(payload: dict):
+    ssid = payload.get("ssid")
+    password = payload.get("password")
+    logger.info(f"[CONFIGURE] Received Wi-Fi credentials: SSID={ssid}, PASS={password}")
+
 
 async def handle_incoming_messages(client: Client):
     await client.subscribe(f"device/{GARDEN_ID}/control")
-    logger.info(f"Subscribed to device/{GARDEN_ID}/control")
+    await client.subscribe(f"device/{GARDEN_ID}/configure")
+    logger.info(f"Subscribed to device/{GARDEN_ID}/control and /configure")
 
     async for message in client.messages:
         try:
             payload = json.loads(message.payload.decode())
-            action = payload.get("action")
-            logger.info(f"[CONTROL] Received: {json.dumps(payload)}")
+            topic = str(message.topic)
+            logger.info(f"[INCOMING] {topic}: {json.dumps(payload)}")
 
-            match action:
-                case ControlActionType.TURN_ON:
-                    state.light_on = True
-                case ControlActionType.TURN_OFF:
-                    state.light_on = False
-                case ControlActionType.OPEN_ROOF:
-                    state.roof_open = True
-                case ControlActionType.CLOSE_ROOF:
-                    state.roof_open = False
-                case ControlActionType.INCREASE_TEMPERATURE:
-                    state.temperature_offset += 5
-                case ControlActionType.DECREASE_TEMPERATURE:
-                    state.temperature_offset = max(0, state.temperature_offset - 5)
-                case ControlActionType.START_WATERING:
-                    asyncio.create_task(state.start_watering())
-                case ControlActionType.RESET_ESP:
-                    logger.info("ESP reset requested (no-op in mock).")
-                case _:
-                    logger.warning(f"Unknown action: {action}")
+            if topic.endswith("/control"):
+                await handle_control(payload)
+            elif topic.endswith("/configure"):
+                await handle_configure(payload)
+
         except Exception as e:
             logger.error(f"Error handling message: {e}")
 
