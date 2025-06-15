@@ -47,7 +47,7 @@ class WebSocketManager:
 
     async def authenticate_and_connect(self, websocket: WebSocket) -> int | None:
         """Extracts user ID from WebSocket headers and connects the socket."""
-        auth_header = websocket.headers.get("authorization")
+        auth_header = websocket.query_params.get("authorization")
         scheme, token = get_authorization_scheme_param(auth_header)
 
         if scheme.lower() != "bearer" or not token:

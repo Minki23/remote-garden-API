@@ -1,10 +1,11 @@
 from app.exceptions.scheme import AppException
+from app.models.db import DeviceDb
 from app.models.enums import ControlActionType, DeviceType
 from app.models.dtos.devices import DeviceDTO, DeviceCreateDTO
 from app.mappers.devices import db_to_dto
 from app.repos.devices import DeviceRepository
 from sqlalchemy import select
-
+from app.core.mqtt.mqtt_publisher import MqttTopicPublisher
 
 class DeviceService:
     def __init__(self, repo: DeviceRepository):
@@ -38,9 +39,7 @@ class DeviceService:
             result.append(db_to_dto(device))
         return result
 
-    async def _get_garden_device_by_type(self, garden_id: int, type: DeviceType):
-        from app.models.db import DeviceDb
-
+    async def _get_garden_device_by_type(self, garden_id: int, type: DeviceType) -> DeviceDb:
         result = await self.repo.db.execute(
             select(DeviceDb).where(DeviceDb.garden_id == garden_id, DeviceDb.type == type)
         )
@@ -68,5 +67,9 @@ class DeviceService:
             "kwargs": kwargs,
         }
 
-        print(f"[MOCK MQTT] Publishing to device {device.id}: {payload}")
+        await MqttTopicPublisher().publish(
+            topic=f"device/{device.garden_id}/control",
+            payload=payload,
+        )
+
         return True
