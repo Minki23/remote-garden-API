@@ -55,59 +55,72 @@ state = DeviceState()
 
 async def publish_mock_data(client: Client):
     while True:
-        await client.publish(f"device/{GARDEN_ID}/status", json.dumps({
-            "mac": MACS["status"],
-            "battery_level": round(random.uniform(40, 100), 2),
-            "signal_strength": random.randint(-80, -50),
-            "is_online": True,
-            "system_ok": random.choice([True, True, False]),
-        }))
+        await client.publish(
+            f"device/{GARDEN_ID}/status",
+            json.dumps(
+                {
+                    "mac": MACS["status"],
+                    "battery_level": round(random.uniform(40, 100), 2),
+                    "signal_strength": random.randint(-80, -50),
+                    "is_online": True,
+                    "system_ok": random.choice([True, True, False]),
+                }
+            ),
+        )
         logger.info("Published status")
 
-        await client.publish(f"device/{GARDEN_ID}/soil", json.dumps({
-            "mac": MACS["soil"],
-            "value": round(random.uniform(30, 70), 1)
-        }))
+        await client.publish(
+            f"device/{GARDEN_ID}/soil",
+            json.dumps(
+                {"mac": MACS["soil"], "value": round(random.uniform(30, 70), 1)}
+            ),
+        )
         logger.info("Published soil")
 
         base_temp = (18 + state.temperature_offset, 20 + state.temperature_offset)
-        await client.publish(f"device/{GARDEN_ID}/temperature", json.dumps({
-            "mac": MACS["temperature"],
-            "value": round(random.uniform(*base_temp), 1)
-        }))
+        await client.publish(
+            f"device/{GARDEN_ID}/temperature",
+            json.dumps(
+                {
+                    "mac": MACS["temperature"],
+                    "value": round(random.uniform(*base_temp), 1),
+                }
+            ),
+        )
         logger.info("Published temperature")
 
-        await client.publish(f"device/{GARDEN_ID}/co2", json.dumps({
-            "mac": MACS["co2"],
-            "value": random.randint(350, 800)
-        }))
+        await client.publish(
+            f"device/{GARDEN_ID}/co2",
+            json.dumps({"mac": MACS["co2"], "value": random.randint(350, 800)}),
+        )
         logger.info("Published co2")
 
-        await client.publish(f"device/{GARDEN_ID}/light", json.dumps({
-            "mac": MACS["light"],
-            "value": state.light_on
-        }))
+        await client.publish(
+            f"device/{GARDEN_ID}/light",
+            json.dumps({"mac": MACS["light"], "value": state.light_on}),
+        )
         logger.info("Published light")
 
-        await client.publish(f"device/{GARDEN_ID}/water", json.dumps({
-            "mac": MACS["water_pump"],
-            "value": state.watering_active
-        }))
+        await client.publish(
+            f"device/{GARDEN_ID}/water",
+            json.dumps({"mac": MACS["water_pump"], "value": state.watering_active}),
+        )
         logger.info("Published water_pump")
 
-        await client.publish(f"device/{GARDEN_ID}/roof", json.dumps({
-            "mac": MACS["roof"],
-            "value": state.roof_open
-        }))
+        await client.publish(
+            f"device/{GARDEN_ID}/roof",
+            json.dumps({"mac": MACS["roof"], "value": state.roof_open}),
+        )
         logger.info("Published roof")
 
-        await client.publish(f"device/{GARDEN_ID}/heater", json.dumps({
-            "mac": MACS["heater"],
-            "value": False
-        }))
+        await client.publish(
+            f"device/{GARDEN_ID}/heater",
+            json.dumps({"mac": MACS["heater"], "value": False}),
+        )
         logger.info("Published heater")
 
         await asyncio.sleep(5)
+
 
 async def handle_control(payload: dict):
     action = payload.get("action")

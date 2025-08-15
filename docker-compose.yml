@@ -106,44 +106,6 @@ services:
     environment:
       DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
 
-  migration:
-    build:
-      context: .
-      dockerfile: Dockerfile.migration
-    container_name: remote-garden-migration
-    depends_on:
-      - db
-    volumes:
-      - ./:/app
-    environment:
-      DB_CONNECTION_STRING: "postgresql+psycopg2://user:password@db:5432/garden"
-    entrypoint: ["./app/utils/scripts/migration_manager.sh"]
-    command: ["-c", "sleep infinity"]
-    profiles:
-      - manual
-
-  format:
-    build:
-      context: .
-      dockerfile: Dockerfile.format
-    container_name: remote-garden-format
-    volumes:
-      - ./app:/app
-    entrypoint: ["./utils/scripts/format.sh"]
-    profiles:
-      - manual
-
-  compile-lock:
-    build:
-      context: .
-      dockerfile: Dockerfile.compilereq
-    container_name: remote-garden-compile-lock
-    volumes:
-      - ./uv.lock:/app/uv.lock
-      - ./pyproject.toml:/app/pyproject.toml:ro
-    profiles:
-      - manual
-
   mock-data:
     build: .
     container_name: remote-garden-mock-data

@@ -37,6 +37,8 @@ class NotificationService:
             )
         return await self.repo.mark_as_read(id)
 
-    async def get_by_user_and_type(self, user_id: int, type_: str) -> list[NotificationDTO]:
+    async def get_by_user_and_type(
+        self, user_id: int, type_: str
+    ) -> list[NotificationDTO]:
         notifs = await self.repo.get_by_user_and_type(user_id, type_)
         return [db_to_dto(n) for n in notifs]

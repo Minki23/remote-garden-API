@@ -2,6 +2,7 @@ from authlib.integrations.httpx_client import AsyncOAuth2Client
 from app.core.config import CONFIG
 import httpx
 
+
 async def verify_google_token(id_token: str) -> dict:
     async with httpx.AsyncClient() as client:
         response = await client.get(

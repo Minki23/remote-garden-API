@@ -26,7 +26,9 @@ class MqttTopicSubscriber:
         self.broker_host = broker_host
         self.port = port
         self._history: Dict[str, deque[dict]] = defaultdict(lambda: deque(maxlen=5))
-        self._callbacks: Dict[str, list[Callable[[str, dict], Awaitable[None]]]] = defaultdict(list)
+        self._callbacks: Dict[str, list[Callable[[str, dict], Awaitable[None]]]] = (
+            defaultdict(list)
+        )
         self._client: Client | None = None
         self._initialized = True
 
@@ -45,7 +47,9 @@ class MqttTopicSubscriber:
 
         logger.info("MQTT client disconnected")
 
-    async def subscribe(self, topic: str, callback: Callable[[str, dict], Awaitable[None]] | None = None):
+    async def subscribe(
+        self, topic: str, callback: Callable[[str, dict], Awaitable[None]] | None = None
+    ):
         if self._client is None:
             raise RuntimeError("Client is not connected yet")
 
@@ -55,7 +59,9 @@ class MqttTopicSubscriber:
         if callback:
             self._callbacks[topic].append(callback)
         else:
-            logger.warning(f"No callback provided for topic: {topic}. Messages will not be processed.")
+            logger.warning(
+                f"No callback provided for topic: {topic}. Messages will not be processed."
+            )
 
     async def subscribe_handler(self, handler: BaseMqttCallbackHandler):
         await self.subscribe(handler.wildcard_topic, handler)
@@ -80,15 +86,15 @@ class MqttTopicSubscriber:
 
     def get_last_messages(self, topic: str) -> list[dict]:
         return list(self._history[topic])
-    
+
     def get_last_message(self, topic: str) -> dict:
         if not self._history[topic]:
             raise AppException(f"No message found for topic: {topic}")
         return self._history[topic][-1]
 
     def _topic_matches(self, pattern: str, topic: str) -> bool:
-        pattern_parts = pattern.split('/')
-        topic_parts = topic.split('/')
+        pattern_parts = pattern.split("/")
+        topic_parts = topic.split("/")
 
         for p, t in zip(pattern_parts, topic_parts):
             if p == "#":
@@ -102,6 +108,7 @@ class MqttTopicSubscriber:
 
 
 if __name__ == "__main__":
+
     async def on_message(topic: str, payload: dict):
         print(f"[ACTION] New message on {topic}: {json.dumps(payload, indent=2)}")
 

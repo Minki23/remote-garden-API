@@ -29,7 +29,7 @@ async def mock():
                 email=f"user{i}@example.com",
                 google_sub=None,
                 created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow()
+                updated_at=datetime.utcnow(),
             )
             session.add(user)
             await session.flush()  # get user.id
@@ -44,7 +44,7 @@ async def mock():
                     enable_automation=True,
                     use_fahrenheit=False,
                     created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow()
+                    updated_at=datetime.utcnow(),
                 )
                 session.add(garden)
                 await session.flush()  # get garden.id
@@ -57,18 +57,20 @@ async def mock():
                         mac=str(uuid.uuid4()),
                         type=device_type,
                         created_at=datetime.utcnow(),
-                        updated_at=datetime.utcnow()
+                        updated_at=datetime.utcnow(),
                     )
                     session.add(device)
                     await session.flush()  # get device.id
 
-                    logger.info(f"    Created device {device.type.value} for garden {garden.name}")
+                    logger.info(
+                        f"    Created device {device.type.value} for garden {garden.name}"
+                    )
 
                     for _ in range(3):
                         reading = ReadingDb(
                             device_id=device.id,
                             value=f"{random.uniform(10, 100):.2f}",
-                            timestamp=datetime.utcnow()
+                            timestamp=datetime.utcnow(),
                         )
                         session.add(reading)
 
@@ -81,7 +83,7 @@ async def mock():
                     type=notif_type,
                     read=False,
                     created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow()
+                    updated_at=datetime.utcnow(),
                 )
                 session.add(notif)
 

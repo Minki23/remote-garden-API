@@ -23,4 +23,5 @@ async def subscribe_topics():
     ):
         await MqttTopicSubscriber().subscribe_handler(handler())
 
+
 __all__ = ["subscribe_topics"]

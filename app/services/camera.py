@@ -5,6 +5,7 @@ import av
 import cv2
 from app.core.config import CONFIG
 
+
 class VideoTrack(MediaStreamTrack):
     kind = "video"
 
@@ -21,6 +22,7 @@ class VideoTrack(MediaStreamTrack):
                 frame.pts = timestamp
                 frame.time_base = Fraction(1, 90000)
                 return frame
+
 
 class MockVideoTrack(MediaStreamTrack):
     kind = "video"

@@ -10,7 +10,9 @@ class DeviceType(str, Enum):
     WATER_PUMP = "WATER_PUMP"
     HEATER = "HEATER"
     OTHER = "OTHER"
-    ESP = "ESP"
+    FAN = "FAN"
+    ATOMIZER = "ATOMIZER"
+    HEATING_MAT = "HEATING_MAT"
 
 
 class NotificationType(str, Enum):
@@ -38,4 +40,12 @@ class ControlActionType(str, Enum):
     INCREASE_TEMPERATURE = "INCREASE_TEMPERATURE"
     DECREASE_TEMPERATURE = "DECREASE_TEMPERATURE"
     RESET_ESP = "RESET_ESP"
+    WATER_ON = "WATER_ON"
+    WATER_OFF = "WATER_OFF"
+    ATOMIZE_ON = "ATOMIZE_ON"
+    ATOMIZE_OFF = "ATOMIZE_OFF"
+    FAN_ON = "FAN_ON"
+    FAN_OFF = "FAN_OFF"
+    HEATING_MAT_ON = "HEATING_MAT_ON"
+    HEATING_MAT_OFF = "HEATING_MAT_OFF"
     # PAIR_ESP = "PAIR_ESP"

@@ -14,7 +14,9 @@ class ReadingRepository(SuperRepo[ReadingDb]):
         super().__init__(db, ReadingDb)
 
     async def get_by_device(self, device_id: int) -> List[ReadingDb]:
-        result = await self.db.execute(select(self.model).where(self.model.device_id == device_id))
+        result = await self.db.execute(
+            select(self.model).where(self.model.device_id == device_id)
+        )
         return result.scalars().all()
 
     async def get_by_garden_filters(

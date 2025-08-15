@@ -8,6 +8,7 @@ import av
 
 router = APIRouter()
 
+
 def get_frame_generator():
     if CONFIG.USE_MOCK_CAMERA:
         cap = cv2.VideoCapture(0)
@@ -18,7 +19,7 @@ def get_frame_generator():
                 if not ret:
                     time.sleep(0.05)
                     continue
-                ret, jpeg = cv2.imencode('.jpg', frame)
+                ret, jpeg = cv2.imencode(".jpg", frame)
                 if not ret:
                     continue
                 yield (
@@ -36,7 +37,7 @@ def get_frame_generator():
             for packet in container.demux(stream):
                 for frame in packet.decode():
                     img = frame.to_ndarray(format="bgr24")
-                    ret, jpeg = cv2.imencode('.jpg', img)
+                    ret, jpeg = cv2.imencode(".jpg", img)
                     if not ret:
                         continue
                     yield (
@@ -46,6 +47,9 @@ def get_frame_generator():
 
         return frame_gen()
 
+
 @router.get("/video")
 async def video_feed():
-    return StreamingResponse(get_frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame")
+    return StreamingResponse(
+        get_frame_generator(), media_type="multipart/x-mixed-replace; boundary=frame"
+    )

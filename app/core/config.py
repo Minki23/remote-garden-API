@@ -32,7 +32,12 @@ class Config:
         session_time = timedelta(days=30)
         use_mock = getenv("USE_MOCK_CAMERA", "0").lower() in ("1", "true", "yes")
 
-        return Config(db_connection_string, cookies_key_name, session_time, USE_MOCK_CAMERA=use_mock,)
+        return Config(
+            db_connection_string,
+            cookies_key_name,
+            session_time,
+            USE_MOCK_CAMERA=use_mock,
+        )
 
 
 CONFIG = Config.get_config()

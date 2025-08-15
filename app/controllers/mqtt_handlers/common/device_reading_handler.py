@@ -18,7 +18,9 @@ class DeviceReadingHandler(BaseMqttCallbackHandler):
         self.device_type = device_type
 
     async def __call__(self, topic: str, payload: dict):
-        logger.info(f"[{self.device_type.name} SENSOR] topic={topic}, payload={payload}")
+        logger.info(
+            f"[{self.device_type.name} SENSOR] topic={topic}, payload={payload}"
+        )
 
         value = payload.get("value")
         if value is None:
@@ -33,15 +35,21 @@ class DeviceReadingHandler(BaseMqttCallbackHandler):
 
         async with async_session_maker() as session:
             device_repo = DeviceRepository(session)
-            device = await device_repo.get_by_garden_id_and_type(garden_id, self.device_type)
+            device = await device_repo.get_by_garden_id_and_type(
+                garden_id, self.device_type
+            )
             if not device:
-                logger.warning(f"No {self.device_type.name} device found for garden {garden_id}")
+                logger.warning(
+                    f"No {self.device_type.name} device found for garden {garden_id}"
+                )
                 return
 
             reading_service = ReadingService(ReadingRepository(session))
             dto = ReadingCreateDTO(device_id=device.id, value=str(value))
             await reading_service.create(dto)
-            logger.info(f"Saved {self.device_type.name} reading for device {device.id} in garden {garden_id}")
+            logger.info(
+                f"Saved {self.device_type.name} reading for device {device.id} in garden {garden_id}"
+            )
 
             try:
                 user_repo = UserRepository(session)
@@ -50,13 +58,16 @@ class DeviceReadingHandler(BaseMqttCallbackHandler):
                     logger.warning(f"User not found for garden {garden_id}")
                     return
 
-                await websocket_manager.send_to_user(user.id, {
-                    "event": "new_reading",
-                    "device_type": self.device_type.value,
-                    "value": value,
-                    "garden_id": garden_id,
-                    "device_id": device.id
-                })
+                await websocket_manager.send_to_user(
+                    user.id,
+                    {
+                        "event": "new_reading",
+                        "device_type": self.device_type.value,
+                        "value": value,
+                        "garden_id": garden_id,
+                        "device_id": device.id,
+                    },
+                )
                 logger.info(f"WebSocket event sent to user {user.id}")
             except Exception as e:
                 logger.warning(f"Failed to send WebSocket message: {e}")

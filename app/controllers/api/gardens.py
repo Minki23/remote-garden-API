@@ -5,7 +5,6 @@ from app.models.dtos.gardens import (
     GardenDTO,
     GardenPreferencesUpdateDTO,
     GardenUpdateDTO,
-    GardenConfigureDTO,
 )
 
 router = APIRouter()
@@ -43,15 +42,6 @@ async def get_my_gardens(
     user_id: CurrentUserDep,
 ):
     return await service.get_gardens_by_user(user_id)
-
-
-@router.post("/{garden_id}/configure", response_model=bool)
-async def configure_garden(
-    config: GardenConfigureDTO,
-    service: GardenServiceDep,
-    garden: GardenDep,
-) -> bool:
-    return await service.configure_garden(garden.id, config)
 
 
 @router.patch("/{garden_id}/preferences", response_model=GardenDTO)

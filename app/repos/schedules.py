@@ -10,7 +10,9 @@ from app.core.celery.celery_app import celery_app
 
 class ScheduleRepository:
     def __init__(self):
-        self.redis_client = redis.StrictRedis.from_url(celery_app.conf.redbeat_redis_url)
+        self.redis_client = redis.StrictRedis.from_url(
+            celery_app.conf.redbeat_redis_url
+        )
 
     def list(self, garden_id: int) -> List[dict]:
         keys = self.redis_client.keys(f"redbeat:garden_{garden_id}_*")
@@ -47,13 +49,17 @@ class ScheduleRepository:
     def delete(self, task_id: str):
         key = f"redbeat:{task_id}"
         if not self.redis_client.exists(key):
-            raise AppException(f"Task with ID {task_id} does not exist in the schedule.")
+            raise AppException(
+                f"Task with ID {task_id} does not exist in the schedule."
+            )
         self.redis_client.delete(key)
 
     def update(self, task_id: str, cron: str):
         key = f"redbeat:{task_id}"
         if not self.redis_client.exists(key):
-            raise AppException(f"Task with ID {task_id} does not exist in the schedule.")
+            raise AppException(
+                f"Task with ID {task_id} does not exist in the schedule."
+            )
         entry = RedBeatSchedulerEntry.from_key(key, app=celery_app)
         entry.schedule = crontab_from_string(cron)
         entry.save()
@@ -61,7 +67,9 @@ class ScheduleRepository:
     def toggle(self, task_id: str):
         key = f"redbeat:{task_id}"
         if not self.redis_client.exists(key):
-            raise AppException(f"Task with ID {task_id} does not exist in the schedule.")
+            raise AppException(
+                f"Task with ID {task_id} does not exist in the schedule."
+            )
         entry = RedBeatSchedulerEntry.from_key(key, app=celery_app)
         entry.enabled = not entry.enabled
         entry.save()

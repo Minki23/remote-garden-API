@@ -12,13 +12,22 @@ from app.exceptions.scheme import AppException
 logger = logging.getLogger(__name__)
 
 _ACTION_MAP = {
-    ScheduleActionType.START_WATERING: (DeviceType.WATER_PUMP, ControlActionType.START_WATERING),
+    ScheduleActionType.START_WATERING: (
+        DeviceType.WATER_PUMP,
+        ControlActionType.START_WATERING,
+    ),
     ScheduleActionType.OPEN_ROOF: (DeviceType.ROOF, ControlActionType.OPEN_ROOF),
     ScheduleActionType.CLOSE_ROOF: (DeviceType.ROOF, ControlActionType.CLOSE_ROOF),
     ScheduleActionType.TURN_ON: (DeviceType.LIGHT, ControlActionType.TURN_ON),
     ScheduleActionType.TURN_OFF: (DeviceType.LIGHT, ControlActionType.TURN_OFF),
-    ScheduleActionType.INCREASE_TEMPERATURE: (DeviceType.HEATER, ControlActionType.INCREASE_TEMPERATURE),
-    ScheduleActionType.DECREASE_TEMPERATURE: (DeviceType.HEATER, ControlActionType.DECREASE_TEMPERATURE),
+    ScheduleActionType.INCREASE_TEMPERATURE: (
+        DeviceType.HEATER,
+        ControlActionType.INCREASE_TEMPERATURE,
+    ),
+    ScheduleActionType.DECREASE_TEMPERATURE: (
+        DeviceType.HEATER,
+        ControlActionType.DECREASE_TEMPERATURE,
+    ),
 }
 
 

@@ -2,7 +2,12 @@ from fastapi import APIRouter, Query
 from typing import Optional
 from datetime import datetime
 
-from app.core.dependencies import CurrentUserDep, ReadingServiceDep, GardenDep, UserDeviceDep
+from app.core.dependencies import (
+    CurrentUserDep,
+    ReadingServiceDep,
+    GardenDep,
+    UserDeviceDep,
+)
 from app.models.dtos.readings import ReadingDTO
 from app.models.enums import DeviceType
 
@@ -46,4 +51,3 @@ async def get_last_by_device_type(
         garden_id=garden.id,
         type=type,
     )
-

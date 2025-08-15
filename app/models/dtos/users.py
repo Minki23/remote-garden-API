@@ -9,5 +9,6 @@ class UserCreateDTO(BaseModel):
 class UserDTO(BaseModel):
     id: int
     email: EmailStr
+    admin: bool
     created_at: datetime
     updated_at: datetime

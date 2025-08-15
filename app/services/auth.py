@@ -4,6 +4,7 @@ from app.core.security.google import verify_google_token
 from app.core.security.jwt import create_access_token
 from app.models.dtos.auth import TokenDTO
 
+
 class AuthService:
     def __init__(self, repo: UserRepository):
         self.repo = repo

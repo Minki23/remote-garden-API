@@ -14,7 +14,9 @@ class SuperRepo(Generic[T]):
         self.model = model
 
     async def get_by_id(self, obj_id: UUID) -> Optional[T]:
-        result = await self.db.execute(select(self.model).where(self.model.id == obj_id))
+        result = await self.db.execute(
+            select(self.model).where(self.model.id == obj_id)
+        )
         return result.scalar_one_or_none()
 
     async def get_all(self) -> List[T]:

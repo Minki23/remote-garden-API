@@ -37,7 +37,9 @@ class ReadingService:
         start_time: datetime,
         end_time: datetime,
     ) -> list[ReadingDTO]:
-        readings = await self.repo.get_by_garden_filters(garden_id, type, start_time, end_time)
+        readings = await self.repo.get_by_garden_filters(
+            garden_id, type, start_time, end_time
+        )
         return [db_to_dto(r) for r in readings]
 
     async def get_last_for_garden_device_type(

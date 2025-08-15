@@ -1,6 +1,9 @@
+from app.mappers.esp_devices import db_esp_to_dto
+from app.models.dtos.esp_device import EspDeviceDTO
+from app.repos.esp_devices import EspDeviceRepository
 from app.repos.schedules import ScheduleRepository
 from fastapi import Path, Body, Depends
-from typing import Annotated
+from typing import Annotated, List
 
 from app.exceptions.scheme import AppException
 from app.models.enums import ScheduleActionType
@@ -8,17 +11,26 @@ from app.models.dtos.gardens import GardenDTO
 from app.models.dtos.devices import DeviceDTO
 from app.models.dtos.notifications import NotificationDTO
 from app.models.dtos.schedules import WeeklyScheduleDTO
-from app.models.db import DeviceDb, GardenDb
+from app.models.db import DeviceDb, GardenDb, UserDb
 from app.mappers.gardens import db_to_garden_dto
 from app.mappers.devices import db_to_dto as db_device_to_dto
 from app.mappers.notifications import db_to_dto as db_notification_to_dto
 from app.repos.gardens import GardenRepository
 from app.repos.devices import DeviceRepository
 from app.repos.notifications import NotificationRepository
-from app.services import users, gardens, devices, notifications, readings, status, auth
+from app.services import (
+    users,
+    gardens,
+    devices,
+    notifications,
+    readings,
+    status,
+    auth,
+    esp_devices,
+)
 from app.services.schedules import ScheduleService
 from app.core.db_context import get_async_session
-from app.core.security.deps import get_current_user_id
+from app.core.security.deps import get_current_user_id, get_current_admin_user
 from fastapi import Security
 
 # --- Service Factories ---
@@ -29,7 +41,9 @@ async def _get_user_service(db=Depends(get_async_session)) -> users.UserService:
 
 
 async def _get_garden_service(db=Depends(get_async_session)) -> gardens.GardenService:
-    return gardens.GardenService(gardens.GardenRepository(db), await _get_device_service(db))
+    return gardens.GardenService(
+        gardens.GardenRepository(db), await _get_device_service(db)
+    )
 
 
 async def _get_device_service(db=Depends(get_async_session)) -> devices.DeviceService:
@@ -42,15 +56,24 @@ async def _get_notification_service(
     return notifications.NotificationService(notifications.NotificationRepository(db))
 
 
-async def _get_reading_service(db=Depends(get_async_session)) -> readings.ReadingService:
+async def _get_reading_service(
+    db=Depends(get_async_session),
+) -> readings.ReadingService:
     return readings.ReadingService(readings.ReadingRepository(db))
 
 
 async def _get_status_service() -> status.StatusService:
     return status.StatusService()
 
+
 async def _get_auth_service(db=Depends(get_async_session)) -> auth.AuthService:
     return auth.AuthService(users.UserRepository(db))
+
+
+async def _get_esp_devices_service(
+    db=Depends(get_async_session),
+) -> esp_devices.EspDeviceService:
+    return esp_devices.EspDeviceService()
 
 
 # _redis_client = Redis(host="redis", port=6379, decode_responses=True)
@@ -72,6 +95,44 @@ async def _get_garden_for_user(
     if not garden:
         raise AppException("Garden not found or access denied", 404)
     return db_to_garden_dto(garden)
+
+
+async def _get_user_garden_or_404(db, garden_id: int, user_id: int) -> GardenDb:
+    garden = await GardenRepository(db).get_by_id_and_user(garden_id, user_id)
+    if not garden:
+        raise AppException("Garden not found or access denied", 404)
+    return garden
+
+
+async def _get_esp_device_for_garden(
+    garden_id: int = Path(...),
+    user_id: int = Depends(get_current_user_id),
+    db=Depends(get_async_session),
+) -> List[EspDeviceDTO]:
+    await _get_user_garden_or_404(db, garden_id, user_id)
+
+    esp_repo = EspDeviceRepository(db)
+    esp_devices = await esp_repo.get_by_garden_id(garden_id)
+    if not esp_devices:
+        raise AppException("No ESP device found for this garden", 404)
+
+    return [db_esp_to_dto(esp_device) for esp_device in esp_devices]
+
+
+async def _get_esp_device_for_id_in_garden(
+    garden_id: int = Path(...),
+    esp_id: int = Path(...),
+    user_id: int = Depends(get_current_user_id),
+    db=Depends(get_async_session),
+) -> EspDeviceDTO:
+    await _get_user_garden_or_404(db, garden_id, user_id)
+
+    esp_repo = EspDeviceRepository(db)
+    esp_device = await esp_repo.get_by_id(esp_id)
+    if not esp_device or esp_device.garden_id != garden_id:
+        raise AppException("ESP not found in this garden", 404)
+
+    return db_esp_to_dto(esp_device)
 
 
 async def _get_user_notification(
@@ -145,10 +206,22 @@ ReadingServiceDep = Annotated[readings.ReadingService, Depends(_get_reading_serv
 StatusServiceDep = Annotated[status.StatusService, Depends(_get_status_service)]
 ScheduleServiceDep = Annotated[ScheduleService, Depends(_get_schedule_service)]
 AuthServiceDep = Annotated[auth.AuthService, Depends(_get_auth_service)]
+EspDeviceServiceDep = Annotated[
+    esp_devices.EspDeviceService, Depends(_get_esp_devices_service)
+]
+EspDeviceForGardenDep = Annotated[
+    List[EspDeviceDTO], Depends(_get_esp_device_for_garden)
+]
+SpecificEspDeviceForGardenDep = Annotated[
+    EspDeviceDTO, Depends(_get_esp_device_for_id_in_garden)
+]
 
 GardenDep = Annotated[GardenDTO, Depends(_get_garden_for_user)]
 UserNotificationDep = Annotated[NotificationDTO, Depends(_get_user_notification)]
 UserDeviceDep = Annotated[DeviceDTO, Depends(_get_user_device)]
-WeeklyCronDep = Annotated[tuple[str, ScheduleActionType], Depends(_convert_weekly_dto_to_cron)]
+WeeklyCronDep = Annotated[
+    tuple[str, ScheduleActionType], Depends(_convert_weekly_dto_to_cron)
+]
 CurrentUserDep = Annotated[int, Security(get_current_user_id)]
 UserScheduleDep = Annotated[str, Depends(_get_user_schedule)]
+AdminUserDep = Annotated[UserDb, Depends(get_current_admin_user)]

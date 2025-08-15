@@ -28,7 +28,9 @@ class NotificationRepository(SuperRepo[NotificationDb]):
         await self.db.commit()
         return result.rowcount > 0
 
-    async def get_by_user_and_type(self, user_id: int, type_: str) -> List[NotificationDb]:
+    async def get_by_user_and_type(
+        self, user_id: int, type_: str
+    ) -> List[NotificationDb]:
         result = await self.db.execute(
             select(NotificationDb).where(
                 NotificationDb.user_id == user_id, NotificationDb.type == type_
@@ -36,7 +38,9 @@ class NotificationRepository(SuperRepo[NotificationDb]):
         )
         return result.scalars().all()
 
-    async def get_by_id_and_user(self, notification_id: int, user_id: int) -> NotificationDb | None:
+    async def get_by_id_and_user(
+        self, notification_id: int, user_id: int
+    ) -> NotificationDb | None:
         result = await self.db.execute(
             select(NotificationDb).where(
                 NotificationDb.id == notification_id, NotificationDb.user_id == user_id

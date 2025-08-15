@@ -1,11 +1,15 @@
+from typing import List, Sequence
 from app.exceptions.scheme import AppException
-from app.models.db import DeviceDb
+from app.models.db import DeviceDb, EspDeviceDb
+from app.models.dtos.esp_device import EspDeviceDTO
 from app.models.enums import ControlActionType, DeviceType
-from app.models.dtos.devices import DeviceDTO, DeviceCreateDTO
+from app.models.dtos.devices import DeviceDTO
 from app.mappers.devices import db_to_dto
 from app.repos.devices import DeviceRepository
 from sqlalchemy import select
 from app.core.mqtt.mqtt_publisher import MqttTopicPublisher
+from sqlalchemy.orm import selectinload
+
 
 class DeviceService:
     def __init__(self, repo: DeviceRepository):
@@ -19,57 +23,40 @@ class DeviceService:
         device = await self.repo.get_by_id(id)
         return db_to_dto(device)
 
-    async def create(self, dto: DeviceCreateDTO) -> DeviceDTO:
-        device = await self.repo.create(garden_id=dto.garden_id, mac=dto.mac, type=dto.type)
-        return db_to_dto(device)
-
     async def delete(self, id: int) -> bool:
         return await self.repo.delete(id)
 
-    async def get_all_for_garden(self, garden_id: int) -> list[DeviceDTO]:
-        devices = await self.repo.get_all_by_garden_id(garden_id)
+    async def get_all_for_esps(self, esps: List[EspDeviceDTO]) -> List[DeviceDTO]:
+        devices = await self.repo.get_all_for_esps(esps)
         return [db_to_dto(d) for d in devices]
-
-    async def create_all_for_garden(
-        self, garden_id: int, dtos: list[DeviceCreateDTO]
-    ) -> list[DeviceDTO]:
-        result = []
-        for dto in dtos:
-            device = await self.repo.create(garden_id=garden_id, mac=dto.mac, type=dto.type)
-            result.append(db_to_dto(device))
-        return result
-
-    async def _get_garden_device_by_type(self, garden_id: int, type: DeviceType) -> DeviceDb:
-        result = await self.repo.db.execute(
-            select(DeviceDb).where(DeviceDb.garden_id == garden_id, DeviceDb.type == type)
-        )
-        device = result.scalars().first()
-        if not device:
-            raise AppException(
-                message=f"No device of type {type} found in garden {garden_id}",
-                status_code=404,
-            )
-        return device
 
     async def control_device(
         self,
-        garden_id: int,
+        esps: Sequence[EspDeviceDTO],
         type: DeviceType,
         action: ControlActionType,
-        **kwargs,
     ) -> bool:
-        device = await self._get_garden_device_by_type(garden_id, type)
+        devices = await self.repo.get_all_for_esps(esps)
 
-        payload = {
-            "action": action.value,
-            "device_id": device.id,
-            "type": device.type,
-            "kwargs": kwargs,
-        }
+        matching_devices = [
+            device
+            for device in devices
+            if device.type == type and device.esp and device.esp.mac
+        ]
 
-        await MqttTopicPublisher().publish(
-            topic=f"device/{device.garden_id}/control",
-            payload=payload,
-        )
+        if not matching_devices:
+            raise AppException(
+                message=f"No devices of type {type} with MAC address found for given ESPs",
+                status_code=404,
+            )
+
+        publisher = MqttTopicPublisher()
+
+        for device in matching_devices:
+            payload = {"action": {"id": int(action)}}
+            await publisher.publish(
+                topic=f"devices/{device.esp.mac}/control",
+                payload=payload,
+            )
 
         return True

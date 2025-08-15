@@ -8,6 +8,7 @@ import asyncio
 import json
 import logging
 from app.exceptions.scheme import WebSocketAuthException, AppException
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,7 +22,9 @@ class WebSocketManager:
         await websocket.accept()
         async with self.lock:
             self.active_connections[user_id].add(websocket)
-        logger.info(f"User {user_id} connected. Total connections: {len(self.active_connections[user_id])}")
+        logger.info(
+            f"User {user_id} connected. Total connections: {len(self.active_connections[user_id])}"
+        )
 
     async def disconnect(self, user_id: int, websocket: WebSocket):
         async with self.lock:
@@ -66,5 +69,5 @@ class WebSocketManager:
         await self.connect(user_id, websocket)
         return user_id
 
-    
+
 websocket_manager = WebSocketManager()
