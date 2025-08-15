@@ -6,7 +6,6 @@ import logging
 import argparse
 import shutil
 import requests
-from datetime import datetime
 
 # ---- DATABASE-LIKE CONST ----
 ESPTOOL = "esptool.py"
@@ -79,7 +78,8 @@ def register_device_remotely(mac: str, secret: str, api_url: str, token: str):
     headers = {"Authorization": f"Bearer {token}"}
 
     try:
-        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
+        response = requests.post(
+            api_url, json=payload, headers=headers, timeout=10)
         response.raise_for_status()
         logger.info("ESP device registered via API.")
     except requests.RequestException as e:

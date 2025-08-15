@@ -12,3 +12,4 @@ class ReadingDTO(BaseModel):
     device_id: int
     value: str
     timestamp: datetime
+    esp_id: int

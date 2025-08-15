@@ -1,5 +1,4 @@
 from typing import List
-from app.core.mqtt.mqtt_publisher import MqttTopicPublisher
 from app.repos.gardens import GardenRepository
 from app.services.devices import DeviceService
 from app.models.dtos.gardens import (
@@ -7,7 +6,6 @@ from app.models.dtos.gardens import (
     GardenCreateDTO,
     GardenPreferencesUpdateDTO,
 )
-from app.exceptions.scheme import AppException
 
 
 class GardenService:
@@ -20,7 +18,7 @@ class GardenService:
         garden_dto = GardenDTO(**garden.__dict__)
         return garden_dto
 
-    async def delete_garden(self, garden_id: int, user_id: int) -> None:
+    async def delete_garden(self, garden_id: int) -> None:
         await self.repo.delete(garden_id)
 
     async def update_garden_name(self, garden_id: int, name: str) -> GardenDTO:

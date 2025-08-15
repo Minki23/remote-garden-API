@@ -33,7 +33,7 @@ async def delete_garden(
     service: GardenServiceDep,
     garden: GardenDep,
 ):
-    await service.delete_garden(garden.id, garden.user_id)
+    await service.delete_garden(garden.id)
 
 
 @router.get("/", response_model=list[GardenDTO])
@@ -42,6 +42,13 @@ async def get_my_gardens(
     user_id: CurrentUserDep,
 ):
     return await service.get_gardens_by_user(user_id)
+
+
+@router.get("/{garden_id}", response_model=GardenDTO)
+async def get_garden_by_id(
+    garden: GardenDep,
+):
+    return garden
 
 
 @router.patch("/{garden_id}/preferences", response_model=GardenDTO)

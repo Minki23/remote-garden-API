@@ -13,3 +13,7 @@ class EspDeviceDTO(BaseModel):
     created_at: datetime
     updated_at: datetime
     garden_id: Optional[int]
+
+
+class AssignGardenDTO(BaseModel):
+    garden_id: int

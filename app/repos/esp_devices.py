@@ -1,13 +1,18 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models.db import EspDeviceDb, GardenDb
-from .utils.super_repo import SuperRepo
+from app.models.db import EspDeviceDb
+from app.repos.utils.super_repo import SuperRepo
 from typing import List, Optional
 
 
 class EspDeviceRepository(SuperRepo[EspDeviceDb]):
     def __init__(self, db: AsyncSession):
         super().__init__(db, EspDeviceDb)
+
+    async def get_by_user_id(self, user_id: int):
+        stmt = select(EspDeviceDb).where(EspDeviceDb.user_id == user_id)
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
 
     async def get_by_client(self, mac: str, client_key: str) -> Optional[EspDeviceDb]:
         result = await self.db.execute(

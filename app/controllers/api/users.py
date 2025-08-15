@@ -1,5 +1,4 @@
-from app.core.security.deps import get_current_user_id, bearer_scheme
-from fastapi import APIRouter, status, Depends, Security
+from fastapi import APIRouter, status
 from app.core.dependencies import UserServiceDep, CurrentUserDep
 from app.models.dtos.users import UserDTO
 

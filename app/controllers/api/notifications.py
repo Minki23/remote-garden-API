@@ -4,14 +4,9 @@ from app.core.dependencies import (
     NotificationServiceDep,
     UserNotificationDep,
 )
-from app.models.dtos.notifications import NotificationCreateDTO, NotificationDTO
+from app.models.dtos.notifications import NotificationDTO
 
 router = APIRouter()
-
-
-# @router.post("/", response_model=NotificationDTO)
-# async def create_notification(dto: NotificationCreateDTO, service: NotificationServiceDep):
-#     return await service.create(dto)
 
 
 @router.get("/", response_model=list[NotificationDTO])

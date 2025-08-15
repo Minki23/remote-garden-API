@@ -1,34 +1,35 @@
 from typing import List, Sequence
 from app.exceptions.scheme import AppException
-from app.models.db import DeviceDb, EspDeviceDb
 from app.models.dtos.esp_device import EspDeviceDTO
 from app.models.enums import ControlActionType, DeviceType
 from app.models.dtos.devices import DeviceDTO
 from app.mappers.devices import db_to_dto
 from app.repos.devices import DeviceRepository
-from sqlalchemy import select
 from app.core.mqtt.mqtt_publisher import MqttTopicPublisher
-from sqlalchemy.orm import selectinload
 
 
 class DeviceService:
     def __init__(self, repo: DeviceRepository):
         self.repo = repo
 
-    async def get_all(self) -> list[DeviceDTO]:
-        devices = await self.repo.get_all()
-        return [db_to_dto(d) for d in devices]
-
-    async def get_by_id(self, id: int) -> DeviceDTO:
-        device = await self.repo.get_by_id(id)
-        return db_to_dto(device)
-
-    async def delete(self, id: int) -> bool:
-        return await self.repo.delete(id)
-
     async def get_all_for_esps(self, esps: List[EspDeviceDTO]) -> List[DeviceDTO]:
         devices = await self.repo.get_all_for_esps(esps)
         return [db_to_dto(d) for d in devices]
+
+    async def get_all_for_esp(self, esp_id: int) -> List[DeviceDTO]:
+        devices = await self.repo.get_all_for_esp_id(esp_id)
+        return [db_to_dto(d) for d in devices]
+
+    async def create_all_for_esp(self, esp_id: int) -> List[DeviceDTO]:
+        created_devices = []
+        for device_type in DeviceType:
+            created = await self.repo.create(
+                esp_id=esp_id,
+                type=device_type
+            )
+            created_devices.append(created)
+
+        return [db_to_dto(d) for d in created_devices]
 
     async def control_device(
         self,
@@ -55,7 +56,7 @@ class DeviceService:
         for device in matching_devices:
             payload = {"action": {"id": int(action)}}
             await publisher.publish(
-                topic=f"devices/{device.esp.mac}/control",
+                topic=f"{device.esp.mac}/device/control",
                 payload=payload,
             )
 

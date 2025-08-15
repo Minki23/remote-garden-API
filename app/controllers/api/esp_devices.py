@@ -1,5 +1,8 @@
+from typing import List
 from fastapi import APIRouter, Header, Body, Response
-from app.core.dependencies import EspDeviceServiceDep
+from app.core.dependencies import CurrentUserDep, EspDeviceServiceDep
+from app.models.dtos.esp_device import AssignGardenDTO, EspDeviceDTO
+from fastapi import status
 
 router = APIRouter()
 
@@ -15,3 +18,42 @@ async def register_device(
         device_id=x_device_id, device_secret=x_device_secret, csr_pem=csr_pem
     )
     return Response(content=cert_pem, media_type="application/x-pem-file")
+
+
+@router.get("/", response_model=List[EspDeviceDTO], status_code=200)
+async def get_esps(
+    service: EspDeviceServiceDep,
+    user_id: CurrentUserDep
+):
+    return await service.get_own(user_id)
+
+
+@router.post("/{esp_id}/assign", status_code=status.HTTP_204_NO_CONTENT)
+async def assign_to_garden(
+    esp_id: int,
+    data: AssignGardenDTO,
+    service: EspDeviceServiceDep,
+    user_id: CurrentUserDep
+):
+    await service.assign_to_garden(esp_id, data.garden_id, user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{esp_id}/unassign", status_code=status.HTTP_204_NO_CONTENT)
+async def unassign_from_garden(
+    esp_id: int,
+    service: EspDeviceServiceDep,
+    user_id: CurrentUserDep
+):
+    await service.unassign_from_garden(esp_id, user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{esp_id}/reset", status_code=status.HTTP_204_NO_CONTENT)
+async def reset_device(
+    esp_id: int,
+    service: EspDeviceServiceDep,
+    user_id: CurrentUserDep
+):
+    await service.reset_device(esp_id, user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

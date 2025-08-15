@@ -3,7 +3,6 @@ from app.exceptions.scheme import AppException
 import redis
 from typing import List
 from redbeat import RedBeatSchedulerEntry
-from celery import Celery
 from celery.schedules import crontab
 from app.core.celery.celery_app import celery_app
 

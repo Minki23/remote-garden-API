@@ -1,5 +1,5 @@
 from app.mappers.esp_devices import db_esp_to_dto
-from app.models.dtos.esp_device import EspDeviceDTO
+from app.models.dtos.esp_device import AssignGardenDTO, EspDeviceDTO
 from app.repos.esp_devices import EspDeviceRepository
 from app.repos.schedules import ScheduleRepository
 from fastapi import Path, Body, Depends
@@ -11,7 +11,7 @@ from app.models.dtos.gardens import GardenDTO
 from app.models.dtos.devices import DeviceDTO
 from app.models.dtos.notifications import NotificationDTO
 from app.models.dtos.schedules import WeeklyScheduleDTO
-from app.models.db import DeviceDb, GardenDb, UserDb
+from app.models.db import GardenDb, UserDb
 from app.mappers.gardens import db_to_garden_dto
 from app.mappers.devices import db_to_dto as db_device_to_dto
 from app.mappers.notifications import db_to_dto as db_notification_to_dto
@@ -73,10 +73,7 @@ async def _get_auth_service(db=Depends(get_async_session)) -> auth.AuthService:
 async def _get_esp_devices_service(
     db=Depends(get_async_session),
 ) -> esp_devices.EspDeviceService:
-    return esp_devices.EspDeviceService()
-
-
-# _redis_client = Redis(host="redis", port=6379, decode_responses=True)
+    return esp_devices.EspDeviceService(esp_devices.EspDeviceRepository(db))
 
 
 async def _get_schedule_service() -> ScheduleService:
@@ -172,6 +169,23 @@ async def _get_user_schedule(
     return task_id
 
 
+async def _get_user_esp_and_garden(
+    esp_id: int = Path(...),
+    data: AssignGardenDTO = Body(...),
+    user_id: int = Depends(get_current_user_id),
+    db=Depends(get_async_session),
+) -> tuple[EspDeviceDTO, GardenDTO]:
+    esp_repo = EspDeviceRepository(db)
+    esp_device = await esp_repo.get_by_id(esp_id)
+    if not esp_device or esp_device.garden and esp_device.garden.user_id != user_id:
+        raise AppException("ESP device not found or access denied", 404)
+
+    garden = await GardenRepository(db).get_by_id_and_user(data.garden_id, user_id)
+    if not garden:
+        raise AppException("Garden not found or access denied", 404)
+
+    return db_esp_to_dto(esp_device), db_to_garden_dto(garden)
+
 # --- Conversion Deps ---
 
 _WEEKDAY_MAP = {
@@ -197,13 +211,17 @@ async def _convert_weekly_dto_to_cron(
 # --- Annotated Dependencies ---
 
 UserServiceDep = Annotated[users.UserService, Depends(_get_user_service)]
-GardenServiceDep = Annotated[gardens.GardenService, Depends(_get_garden_service)]
-DeviceServiceDep = Annotated[devices.DeviceService, Depends(_get_device_service)]
+GardenServiceDep = Annotated[gardens.GardenService,
+                             Depends(_get_garden_service)]
+DeviceServiceDep = Annotated[devices.DeviceService,
+                             Depends(_get_device_service)]
 NotificationServiceDep = Annotated[
     notifications.NotificationService, Depends(_get_notification_service)
 ]
-ReadingServiceDep = Annotated[readings.ReadingService, Depends(_get_reading_service)]
-StatusServiceDep = Annotated[status.StatusService, Depends(_get_status_service)]
+ReadingServiceDep = Annotated[readings.ReadingService, Depends(
+    _get_reading_service)]
+StatusServiceDep = Annotated[status.StatusService,
+                             Depends(_get_status_service)]
 ScheduleServiceDep = Annotated[ScheduleService, Depends(_get_schedule_service)]
 AuthServiceDep = Annotated[auth.AuthService, Depends(_get_auth_service)]
 EspDeviceServiceDep = Annotated[
@@ -217,7 +235,8 @@ SpecificEspDeviceForGardenDep = Annotated[
 ]
 
 GardenDep = Annotated[GardenDTO, Depends(_get_garden_for_user)]
-UserNotificationDep = Annotated[NotificationDTO, Depends(_get_user_notification)]
+UserNotificationDep = Annotated[NotificationDTO,
+                                Depends(_get_user_notification)]
 UserDeviceDep = Annotated[DeviceDTO, Depends(_get_user_device)]
 WeeklyCronDep = Annotated[
     tuple[str, ScheduleActionType], Depends(_convert_weekly_dto_to_cron)
@@ -225,3 +244,6 @@ WeeklyCronDep = Annotated[
 CurrentUserDep = Annotated[int, Security(get_current_user_id)]
 UserScheduleDep = Annotated[str, Depends(_get_user_schedule)]
 AdminUserDep = Annotated[UserDb, Depends(get_current_admin_user)]
+UserEspAndGardenDep = Annotated[
+    tuple[EspDeviceDTO, GardenDTO], Depends(_get_user_esp_and_garden)
+]
