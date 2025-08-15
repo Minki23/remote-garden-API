@@ -6,4 +6,4 @@ from app.models.enums import DeviceType
 
 class CO2Handler(DeviceReadingHandler):
     def __init__(self):
-        super().__init__("device/{garden_id}/co2", DeviceType.CO2)
+        super().__init__("{mac}/device/{garden_id}/co2", DeviceType.CO2)

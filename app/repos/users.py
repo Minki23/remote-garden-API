@@ -16,6 +16,7 @@ class UserRepository(SuperRepo[UserDb]):
         return result.scalar_one_or_none()
 
     async def get_by_garden_id(self, garden_id: int) -> Optional[UserDb]:
-        stmt = select(UserDb).join(UserDb.gardens).where(GardenDb.id == garden_id)
+        stmt = select(UserDb).join(UserDb.gardens).where(
+            GardenDb.id == garden_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

@@ -21,6 +21,32 @@ class DeviceRepository(SuperRepo[DeviceDb]):
         )
         return result.scalars().all()
 
+    async def get_all_for_esp_mac(self, mac: str) -> List[DeviceDb]:
+        result = await self.db.execute(
+            select(DeviceDb)
+            .join(EspDeviceDb, DeviceDb.esp_id == EspDeviceDb.id)
+            .where(EspDeviceDb.mac == mac)
+            .options(joinedload(DeviceDb.esp))
+        )
+        return result.scalars().all()
+
+    async def get_device_by_type_for_esp_mac(
+        self,
+        mac: str,
+        type: DeviceType
+    ) -> DeviceDb | None:
+        result = await self.db.execute(
+            select(DeviceDb)
+            .join(EspDeviceDb, DeviceDb.esp_id == EspDeviceDb.id)
+            .where(
+                EspDeviceDb.mac == mac,
+                DeviceDb.type == type
+            )
+            .limit(1)
+            .options(joinedload(DeviceDb.esp))
+        )
+        return result.scalar_one_or_none()
+
     async def get_all_for_esp_id(self, esp_id: int) -> List[DeviceDb]:
         stmt = select(DeviceDb).where(DeviceDb.esp_id == esp_id)
         result = await self.db.execute(stmt)

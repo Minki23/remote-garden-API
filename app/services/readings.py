@@ -1,5 +1,5 @@
 from app.exceptions.scheme import AppException
-from app.models.dtos.readings import ReadingDTO
+from app.models.dtos.readings import ReadingCreateDTO, ReadingDTO
 from app.mappers.readings import db_to_dto
 from app.repos.readings import ReadingRepository
 from datetime import datetime
@@ -9,6 +9,10 @@ from app.models.enums import DeviceType
 class ReadingService:
     def __init__(self, repo: ReadingRepository):
         self.repo = repo
+
+    async def create(self, dto: ReadingCreateDTO) -> ReadingDTO:
+        reading = await self.repo.create(device_id=dto.device_id, value=dto.value)
+        return db_to_dto(reading)
 
     async def get_last_for_garden_device_type(
         self,
