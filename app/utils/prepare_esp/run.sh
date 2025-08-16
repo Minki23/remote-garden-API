@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-trap 'rm -f spiffs.bin spiffs_data' EXIT
+trap 'rm -rf spiffs.bin spiffs_data' EXIT
 
 TOKEN=$1
 PORT=${PORT:-/dev/ttyUSB0}

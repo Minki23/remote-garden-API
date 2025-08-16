@@ -14,11 +14,11 @@ class EspDeviceRepository(SuperRepo[EspDeviceDb]):
         result = await self.db.execute(stmt)
         return result.scalars().all()
 
-    async def get_by_client(self, mac: str, client_key: str) -> Optional[EspDeviceDb]:
+    async def get_by_client(self, mac: str, client_secret: str) -> Optional[EspDeviceDb]:
         result = await self.db.execute(
             select(EspDeviceDb)
             .where(EspDeviceDb.mac == mac)
-            .where(EspDeviceDb.client_key == client_key)
+            .where(EspDeviceDb.secret == client_secret)
             .limit(1)
         )
         return result.scalar_one_or_none()

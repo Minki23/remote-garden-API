@@ -89,6 +89,7 @@ class EspDeviceService:
     async def process_csr_and_issue_cert(
         self, device_id: str, device_secret: str, csr_pem: str
     ) -> str:
+        logger.info(f"Try to process {device_id} {device_secret}")
         device = await self.repo.get_by_client(device_id, device_secret)
         if not device:
             raise AppException("Invalid device credentials")
