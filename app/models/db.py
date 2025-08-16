@@ -60,9 +60,6 @@ class GardenDb(SuperDb):
     use_fahrenheit: Mapped[bool] = mapped_column(Boolean, default=False)
 
     user: Mapped["UserDb"] = relationship("UserDb", back_populates="gardens")
-    devices: Mapped[list["DeviceDb"]] = relationship(
-        "DeviceDb", back_populates="garden", cascade="all, delete-orphan"
-    )
     esp_devices: Mapped[list["EspDeviceDb"]] = relationship(
         "EspDeviceDb", back_populates="garden", cascade="all, delete-orphan"
     )
@@ -80,9 +77,6 @@ class DeviceDb(SuperDb):
         "EspDeviceDb", back_populates="devices")
     readings: Mapped[list["ReadingDb"]] = relationship(
         "ReadingDb", back_populates="device", cascade="all, delete-orphan"
-    )
-    garden: Mapped[Optional["GardenDb"]] = relationship(
-        "GardenDb", back_populates="devices"
     )
 
 
@@ -135,3 +129,6 @@ class EspDeviceDb(SuperDb):
     devices: Mapped[list["DeviceDb"]] = relationship(
         "DeviceDb", back_populates="esp", cascade="all, delete-orphan"
     )
+
+    status: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False)

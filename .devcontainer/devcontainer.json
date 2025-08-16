@@ -1,6 +1,8 @@
 {
   "name": "python-3.11",
-  "build": { "dockerfile": "Dockerfile" },
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "remoteUser": "vscode",
   "customizations": {
     "vscode": {
@@ -20,8 +22,16 @@
     }
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",
-  "forwardPorts": [8000],
+  "forwardPorts": [
+    8000
+  ],
   "containerEnv": {
     "PIP_DISABLE_PIP_VERSION_CHECK": "1"
-  }
+  },
+  "runArgs": [
+    "--device=/dev/ttyUSB0",
+    "--net=host",
+    "--privileged",
+    "--volume=/var/run/dbus:/var/run/dbus"
+  ]
 }

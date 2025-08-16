@@ -15,11 +15,6 @@ async def get_by_garden(service: DeviceServiceDep, esps: EspDeviceForGardenDep):
     return await service.get_all_for_esps(esps)
 
 
-@router.get("/esp/{esp_id}", response_model=list[DeviceDTO])
-async def get_by_esp(service: DeviceServiceDep, esp: SpecificEspDeviceForGardenDep):
-    return await service.get_all_for_esp(esp)
-
-
 CONTROL_MAP = {
     "water/on": (DeviceType.WATERER, ControlActionType.WATER_ON),
     "water/off": (DeviceType.WATERER, ControlActionType.WATER_OFF),
@@ -34,7 +29,7 @@ CONTROL_MAP = {
 for path, (device_type, action_type) in CONTROL_MAP.items():
 
     @router.post(
-        f"/{{garden_id}}/{path}",
+        f"/garden/{{garden_id}}/{path}",
         response_model=bool,
         name=f"{path.replace('/', '_')}_all",
     )
@@ -47,7 +42,7 @@ for path, (device_type, action_type) in CONTROL_MAP.items():
         return await service.control_device(esps, device_type, action_type)
 
     @router.post(
-        f"/{{garden_id}}/esp/{{esp_id}}/{path}",
+        f"/esp/{{esp_id}}/{path}",
         response_model=bool,
         name=f"{path.replace('/', '_')}_one",
     )

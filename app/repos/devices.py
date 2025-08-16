@@ -47,11 +47,6 @@ class DeviceRepository(SuperRepo[DeviceDb]):
         )
         return result.scalar_one_or_none()
 
-    async def get_all_for_esp_id(self, esp_id: int) -> List[DeviceDb]:
-        stmt = select(DeviceDb).where(DeviceDb.esp_id == esp_id)
-        result = await self.db.execute(stmt)
-        return result.scalars().all()
-
     async def get_by_id_and_user(self, device_id: int, user_id: int) -> DeviceDb | None:
         result = await self.db.execute(
             select(DeviceDb)

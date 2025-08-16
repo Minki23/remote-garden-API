@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from app.core.mqtt.mqtt_publisher import MqttTopicPublisher
 from app.exceptions.scheme import AppException
@@ -21,6 +22,8 @@ from datetime import datetime, timedelta
 #    auto [clientKey, clientCert, caCert, deviceId] =
 #        DeviceProvisioner::loadTlsCredentials();
 # to waliduje przy odbiorze danych z brokera
+
+logger = logging.getLogger(__name__)
 
 
 class EspDeviceService:
@@ -49,9 +52,11 @@ class EspDeviceService:
         await self.repo.update(esp_id, garden_id=None)
 
     async def register_new_device(self, mac: str, secret: str) -> EspDeviceDb:
+        logger.info(f"Try to register new device: {mac}")
         existing = await self.repo.get_by_mac(mac)
         if existing:
-            raise ValueError("Device already exists")
+            logger.warning("Device exists")
+            raise AppException("Device already exists")
 
         return await self.repo.create(
             mac=mac,
@@ -86,12 +91,12 @@ class EspDeviceService:
     ) -> str:
         device = await self.repo.get_by_client(device_id, device_secret)
         if not device:
-            raise ValueError("Invalid device credentials")
+            raise AppException("Invalid device credentials")
 
         csr = x509.load_pem_x509_csr(
             csr_pem.encode(), backend=default_backend())
         if not csr.is_signature_valid:
-            raise ValueError("CSR signature invalid")
+            raise AppException("CSR signature invalid")
 
         cert = self._sign_certificate(csr)
 

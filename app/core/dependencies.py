@@ -11,7 +11,7 @@ from app.models.dtos.gardens import GardenDTO
 from app.models.dtos.devices import DeviceDTO
 from app.models.dtos.notifications import NotificationDTO
 from app.models.dtos.schedules import WeeklyScheduleDTO
-from app.models.db import GardenDb, UserDb
+from app.models.db import EspDeviceDb, GardenDb, UserDb
 from app.mappers.gardens import db_to_garden_dto
 from app.mappers.devices import db_to_dto as db_device_to_dto
 from app.mappers.notifications import db_to_dto as db_notification_to_dto
@@ -24,7 +24,6 @@ from app.services import (
     devices,
     notifications,
     readings,
-    status,
     auth,
     esp_devices,
 )
@@ -62,10 +61,6 @@ async def _get_reading_service(
     return readings.ReadingService(readings.ReadingRepository(db))
 
 
-async def _get_status_service() -> status.StatusService:
-    return status.StatusService()
-
-
 async def _get_auth_service(db=Depends(get_async_session)) -> auth.AuthService:
     return auth.AuthService(users.UserRepository(db))
 
@@ -101,6 +96,13 @@ async def _get_user_garden_or_404(db, garden_id: int, user_id: int) -> GardenDb:
     return garden
 
 
+async def _get_user_esp_or_404(db, esp_id: int, user_id: int) -> EspDeviceDb:
+    esp = await EspDeviceRepository(db).get_by_id_and_user(esp_id, user_id)
+    if not esp:
+        raise AppException("ESP device not found or access denied", 404)
+    return esp
+
+
 async def _get_esp_device_for_garden(
     garden_id: int = Path(...),
     user_id: int = Depends(get_current_user_id),
@@ -117,18 +119,11 @@ async def _get_esp_device_for_garden(
 
 
 async def _get_esp_device_for_id_in_garden(
-    garden_id: int = Path(...),
     esp_id: int = Path(...),
     user_id: int = Depends(get_current_user_id),
     db=Depends(get_async_session),
 ) -> EspDeviceDTO:
-    await _get_user_garden_or_404(db, garden_id, user_id)
-
-    esp_repo = EspDeviceRepository(db)
-    esp_device = await esp_repo.get_by_id(esp_id)
-    if not esp_device or esp_device.garden_id != garden_id:
-        raise AppException("ESP not found in this garden", 404)
-
+    esp_device = await _get_user_esp_or_404(db, esp_id, user_id)
     return db_esp_to_dto(esp_device)
 
 
@@ -220,8 +215,6 @@ NotificationServiceDep = Annotated[
 ]
 ReadingServiceDep = Annotated[readings.ReadingService, Depends(
     _get_reading_service)]
-StatusServiceDep = Annotated[status.StatusService,
-                             Depends(_get_status_service)]
 ScheduleServiceDep = Annotated[ScheduleService, Depends(_get_schedule_service)]
 AuthServiceDep = Annotated[auth.AuthService, Depends(_get_auth_service)]
 EspDeviceServiceDep = Annotated[

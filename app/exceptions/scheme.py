@@ -7,5 +7,5 @@ class AppException(Exception):
         self.status_code = status_code
 
 
-class WebSocketAuthException(Exception):
+class GoogleAuthException(AppException):
     pass

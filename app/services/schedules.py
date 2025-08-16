@@ -1,4 +1,5 @@
 from uuid import uuid4
+from app.exceptions.scheme import AppException
 from app.models.enums import ScheduleActionType
 from app.repos.schedules import ScheduleRepository
 
@@ -39,5 +40,5 @@ class ScheduleService:
             try:
                 return int(task_id.split("_")[1])
             except (IndexError, ValueError):
-                raise ValueError(f"Invalid task_id format: {task_id}")
-        raise ValueError(f"Invalid task_id prefix: {task_id}")
+                raise AppException(f"Invalid task_id format: {task_id}")
+        raise AppException(f"Invalid task_id prefix: {task_id}")

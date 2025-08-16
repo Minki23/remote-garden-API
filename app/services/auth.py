@@ -1,4 +1,4 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+import secrets
 from app.repos.users import UserRepository
 from app.core.security.google import verify_google_token
 from app.core.security.jwt import create_access_token
@@ -16,7 +16,7 @@ class AuthService:
 
         user = await self.repo.get_by_google_sub(sub)
         if not user:
-            user = await self.repo.create(email=email, google_sub=sub)
+            user = await self.repo.create(email=email, google_sub=sub, auth=secrets.token_urlsafe(32))
 
         jwt_token = create_access_token({"sub": str(user.id)})
         return TokenDTO(access_token=jwt_token)

@@ -58,3 +58,5 @@ pip-delete-this-directory.txt
 # MacOS / Windows
 .DS_Store
 Thumbs.db
+
+app/utils/prepare_esp/spiffs_data

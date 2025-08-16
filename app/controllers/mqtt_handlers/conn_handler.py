@@ -6,24 +6,12 @@ from app.repos.esp_devices import EspDeviceRepository
 from app.repos.notifications import NotificationRepository
 from app.repos.users import UserRepository
 from app.services.notifications import NotificationService
-from app.services.readings import ReadingService
-from app.repos.readings import ReadingRepository
-from app.models.enums import DeviceType, NotificationType
-from app.models.dtos.readings import ReadingCreateDTO
+from app.models.enums import NotificationType
 
 logger = logging.getLogger(__name__)
 
-SENSOR_STR_TO_DEVICE_TYPE = {
-    "light": DeviceType.LIGHT_SENSOR,
-    "air_humidity": DeviceType.AIR_HUMIDITY_SENSOR,
-    "soil_moisture": DeviceType.SOIL_MOISTURE_SENSOR,
-    "air_temperature": DeviceType.AIR_TEMPERATURE_SENSOR,
-    "signal_strenght": DeviceType.SIGNAL_STRENGHT,
-    "battery": DeviceType.BATTERY
-}
 
-
-class DeviceReadingHandler(BaseMqttCallbackHandler):
+class ConnHandler(BaseMqttCallbackHandler):
     def __init__(self):
         super().__init__("{mac}/conn")
 

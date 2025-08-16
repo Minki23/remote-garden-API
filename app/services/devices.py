@@ -16,10 +16,6 @@ class DeviceService:
         devices = await self.repo.get_all_for_esps(esps)
         return [db_to_dto(d) for d in devices]
 
-    async def get_all_for_esp(self, esp_id: int) -> List[DeviceDTO]:
-        devices = await self.repo.get_all_for_esp_id(esp_id)
-        return [db_to_dto(d) for d in devices]
-
     ACTUATORS = (DeviceType.ATOMIZER, DeviceType.FANNER,
                  DeviceType.HEATER, DeviceType.WATERER)
 

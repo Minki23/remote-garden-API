@@ -34,3 +34,12 @@ class EspDeviceRepository(SuperRepo[EspDeviceDb]):
             select(EspDeviceDb).where(EspDeviceDb.garden_id == garden_id)
         )
         return result.scalars().all()
+
+    async def get_by_id_and_user(self, esp_id: int, user_id: int) -> Optional[EspDeviceDb]:
+        result = await self.db.execute(
+            select(EspDeviceDb)
+            .where(EspDeviceDb.id == esp_id)
+            .where(EspDeviceDb.user_id == user_id)
+            .limit(1)
+        )
+        return result.scalar_one_or_none()

@@ -17,8 +17,6 @@ bearer_scheme = HTTPBearer(
 async def _get_current_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> int:
-    return 1
-
     logger.info("Validating user credentials")
     logger.info(f"Received credentials: {credentials}")
 
