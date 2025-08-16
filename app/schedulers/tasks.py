@@ -4,46 +4,66 @@ import logging
 import asyncio
 from app.core.db_context import async_session_maker
 from app.repos.devices import DeviceRepository
+from app.repos.esp_devices import EspDeviceRepository
 from app.services.devices import DeviceService
 from app.models.enums import DeviceType, ControlActionType
 from app.exceptions.scheme import AppException
+from app.services.esp_devices import EspDeviceService
 
 
 logger = logging.getLogger(__name__)
 
 _ACTION_MAP = {
-    ScheduleActionType.START_WATERING: (
-        DeviceType.WATER_PUMP,
-        ControlActionType.START_WATERING,
+    ScheduleActionType.WATER_ON: (
+        DeviceType.WATERER,
+        ControlActionType.WATER_ON,
     ),
-    ScheduleActionType.OPEN_ROOF: (DeviceType.ROOF, ControlActionType.OPEN_ROOF),
-    ScheduleActionType.CLOSE_ROOF: (DeviceType.ROOF, ControlActionType.CLOSE_ROOF),
-    ScheduleActionType.TURN_ON: (DeviceType.LIGHT, ControlActionType.TURN_ON),
-    ScheduleActionType.TURN_OFF: (DeviceType.LIGHT, ControlActionType.TURN_OFF),
-    ScheduleActionType.INCREASE_TEMPERATURE: (
-        DeviceType.HEATER,
-        ControlActionType.INCREASE_TEMPERATURE,
+    ScheduleActionType.WATER_OFF: (
+        DeviceType.WATERER,
+        ControlActionType.WATER_OFF,
     ),
-    ScheduleActionType.DECREASE_TEMPERATURE: (
+    ScheduleActionType.ATOMIZE_ON: (
+        DeviceType.ATOMIZER,
+        ControlActionType.ATOMIZE_ON,
+    ),
+    ScheduleActionType.ATOMIZE_OFF: (
+        DeviceType.ATOMIZER,
+        ControlActionType.ATOMIZE_OFF,
+    ),
+    ScheduleActionType.FAN_ON: (
+        DeviceType.FANNER,
+        ControlActionType.FAN_ON,
+    ),
+    ScheduleActionType.FAN_OFF: (
+        DeviceType.FANNER,
+        ControlActionType.FAN_OFF,
+    ),
+    ScheduleActionType.HEATING_MAT_ON: (
         DeviceType.HEATER,
-        ControlActionType.DECREASE_TEMPERATURE,
+        ControlActionType.HEATING_MAT_ON,
+    ),
+    ScheduleActionType.HEATING_MAT_OFF: (
+        DeviceType.HEATER,
+        ControlActionType.HEATING_MAT_OFF,
     ),
 }
 
 
-@celery_app.task(name="app.schedulers.tasks.run_scheduled_action")
+@celery_app.task(name="app.schedulers.tasks.run_garden_scheduled_action")
 def run_scheduled_action(garden_id: int, action: ScheduleActionType):
     async def inner():
         async with async_session_maker() as db:
             try:
-                service = DeviceService(DeviceRepository(db))
+                dev_service = DeviceService(DeviceRepository(db))
+                esp_repo = EspDeviceRepository(db)
 
                 if action not in _ACTION_MAP:
                     logger.warning(f"No handler for action: {action}")
                     return
 
-                await service.control_device(garden_id, *_ACTION_MAP[action])
-                logger.info(f"[Scheduled] Executed {action} on garden {garden_id}")
+                await dev_service.control_device(esp_repo.get_by_garden_id(garden_id), *_ACTION_MAP[action])
+                logger.info(
+                    f"[Scheduled] Executed {action} on garden {garden_id}")
 
             except AppException as e:
                 logger.error(f"[Scheduled] AppException: {e.message}")

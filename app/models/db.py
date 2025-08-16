@@ -74,6 +74,7 @@ class DeviceDb(SuperDb):
     esp_id: Mapped[int] = mapped_column(Integer, ForeignKey("esp_devices.id"))
     type: Mapped[DeviceType] = mapped_column(
         SqlEnum(DeviceType), nullable=False)
+    enabled: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
 
     esp: Mapped["EspDeviceDb"] = relationship(
         "EspDeviceDb", back_populates="devices")

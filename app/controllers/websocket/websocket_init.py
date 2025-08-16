@@ -1,7 +1,5 @@
-from fastapi import APIRouter, WebSocket, Depends, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.core.websocket.websocket_manager import websocket_manager
-from app.core.dependencies import CurrentUserDep
-
 import logging
 
 logger = logging.getLogger(__name__)

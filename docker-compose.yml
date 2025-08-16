@@ -3,7 +3,7 @@ services:
     image: eclipse-mosquitto:2.0
     container_name: mqtt-broker
     ports:
-      - "1884:1883"  # MQTT
+      - "1884:1883" # MQTT
     volumes:
       - ./app/utils/mock_mqtt/mqtt_config:/mosquitto/config
     restart: unless-stopped
@@ -24,8 +24,8 @@ services:
       - "3000:3000"
     depends_on:
       - db
-    extra_hosts:
-      - "cam.local:172.30.59.180" # change on zerotier one if needed
+    # extra_hosts:
+    #   - "cam.local:172.30.59.180" # change on zerotier one if needed
     # devices:
     #   - "/dev/video0:/dev/video0" # change if want mock and camera is available on different path
   db:
@@ -76,7 +76,7 @@ services:
       - REDBEAT_REDIS_URL=redis://redis:6379/0
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your-google-client-id}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-your-google-client-secret-id}
-      
+
   flower:
     build: .
     container_name: flower
@@ -109,7 +109,7 @@ services:
   mock-data:
     build: .
     container_name: remote-garden-mock-data
-    command: ["python", "-m", "app.utils.scripts.mock_data"]
+    command: [ "python", "-m", "app.utils.scripts.mock_data" ]
     depends_on:
       - db
     environment:
@@ -123,7 +123,7 @@ services:
   mqtt-mock-publisher:
     build: .
     container_name: mqtt-mock-publisher
-    command: ["python", "-m", "app.utils.mock_mqtt.mock_device_publisher"]
+    command: [ "python", "-m", "app.utils.mock_mqtt.mock_device_publisher" ]
     depends_on:
       - mqtt-broker
     environment:
@@ -132,7 +132,6 @@ services:
       - ./:/app
     profiles:
       - manual
-
 
 volumes:
   postgres_data:

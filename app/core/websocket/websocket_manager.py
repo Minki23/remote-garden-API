@@ -7,7 +7,6 @@ from collections import defaultdict
 import asyncio
 import json
 import logging
-from app.exceptions.scheme import WebSocketAuthException, AppException
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,8 @@ class WebSocketManager:
         async with self.lock:
             sockets = list(self.active_connections.get(user_id, []))
         if not sockets:
-            logger.debug(f"No active WebSocket connections for user {user_id}.")
+            logger.debug(
+                f"No active WebSocket connections for user {user_id}.")
             return
 
         for socket in sockets:
@@ -59,7 +59,8 @@ class WebSocketManager:
             return None
 
         try:
-            credentials = HTTPAuthorizationCredentials(scheme=scheme, credentials=token)
+            credentials = HTTPAuthorizationCredentials(
+                scheme=scheme, credentials=token)
             user_id = await get_current_user_id(credentials)
         except Exception:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)

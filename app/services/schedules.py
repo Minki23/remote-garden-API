@@ -7,8 +7,8 @@ class ScheduleService:
     def __init__(self, repo: ScheduleRepository):
         self.repo = repo
 
-    def _task_args(self, garden_id: int, action: ScheduleActionType):
-        return [garden_id, action.value]
+    def _task_args(self, id: int, action: ScheduleActionType):
+        return [id, action.value]
 
     def _task_name(self):
         return "app.schedulers.tasks.run_scheduled_action"
