@@ -1,15 +1,13 @@
 import logging
 from typing import List
+
+from app.clients.csr_client import CsrClient
 from app.core.mqtt.mqtt_publisher import MqttTopicPublisher
 from app.exceptions.scheme import AppException
 from app.mappers.esp_devices import db_esp_to_dto
 from app.models.db import EspDeviceDb
 from app.models.dtos.esp_device import EspDeviceDTO
 from app.repos.esp_devices import EspDeviceRepository
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, serialization
-from datetime import datetime, timedelta
 
 from app.repos.users import UserRepository
 
@@ -32,6 +30,7 @@ class EspDeviceService:
     def __init__(self, repo: EspDeviceRepository, user_repo: UserRepository):
         self.repo = repo
         self.user_repo = user_repo
+        self.csr_client = CsrClient()
 
     async def get_own(self, user_id: int) -> List[EspDeviceDTO]:
         devices = await self.repo.get_by_user_id(user_id)
@@ -89,10 +88,7 @@ class EspDeviceService:
             payload={}
         )
 
-    async def process_csr_and_issue_cert(
-        self, device_id: str, device_secret: str, user_key: str, csr_pem: str
-    ) -> str:
-        logger.info(f"Try to process {device_id} {device_secret}")
+    async def process_csr_and_issue_cert(self, device_id, device_secret, user_key, csr_pem):
         device = await self.repo.get_by_client(device_id, device_secret)
         if not device:
             raise AppException("Invalid device credentials")
@@ -101,46 +97,7 @@ class EspDeviceService:
         if not user:
             raise AppException("Invalid user key")
 
-        csr = x509.load_pem_x509_csr(
-            csr_pem.encode(), backend=default_backend())
-        if not csr.is_signature_valid:
-            raise AppException("CSR signature invalid")
+        cert_pem = await self.csr_client.sign_csr(csr_pem)
 
-        cert = self._sign_certificate(csr)
-
-        pub = cert.public_bytes(serialization.Encoding.PEM).decode()
-        await self.repo.update(
-            device.id,
-            client_crt=pub,
-            user_id=user.id
-        )
-
-        logger.info(f"Return cert {pub}")
-        return pub
-
-    def _sign_certificate(
-        self, csr: x509.CertificateSigningRequest
-    ) -> x509.Certificate:
-        with open("ca/ca.key", "rb") as f:
-            ca_private_key = serialization.load_pem_private_key(
-                f.read(), password=None)
-
-        with open("ca/ca.crt", "rb") as f:
-            ca_cert = x509.load_pem_x509_certificate(
-                f.read(), default_backend())
-
-        subject = csr.subject
-        cert = (
-            x509.CertificateBuilder()
-            .subject_name(subject)
-            .issuer_name(ca_cert.subject)
-            .public_key(csr.public_key())
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.utcnow())
-            .not_valid_after(datetime.utcnow() + timedelta(days=365))
-            .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None), critical=True
-            )
-            .sign(ca_private_key, hashes.SHA256())
-        )
-        return cert
+        await self.repo.update(device.id, client_crt=cert_pem, user_id=user.id)
+        return cert_pem

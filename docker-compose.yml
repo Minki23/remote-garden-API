@@ -1,12 +1,18 @@
 services:
   mqtt-broker:
-    image: eclipse-mosquitto:2.0
+    image: eclipse-mosquitto:latest
     container_name: mqtt-broker
-    ports:
-      - "1884:1883" # MQTT
-    volumes:
-      - ./app/utils/mock_mqtt/mqtt_config:/mosquitto/config
     restart: unless-stopped
+    ports:
+      - "8883:8883"
+    volumes:
+      - ./mqtt-server/mosquitto/config:/mosquitto/config
+      - ./mqtt-server/mosquitto/certs:/mosquitto/certs
+      - ./mqtt-server/mosquitto/data:/mosquitto/data
+      - ./mqtt-server/mosquitto/log:/mosquitto/log
+    environment:
+      - TZ=Europe/Warsaw
+    user: "1883:1883"
 
   app:
     build: .
@@ -24,10 +30,27 @@ services:
       - "3000:3000"
     depends_on:
       - db
+    volumes:
+      - ./mqtt-server/backend/backend.crt:/app/app/ca/backend.crt:ro
+      - ./mqtt-server/backend/backend.key:/app/app/ca/backend.key:ro
+      - ./mqtt-server/certs/ca.crt:/app/app/ca/ca.crt:ro
     # extra_hosts:
     #   - "cam.local:172.30.59.180" # change on zerotier one if needed
     # devices:
     #   - "/dev/video0:/dev/video0" # change if want mock and camera is available on different path
+
+  csr-signer:
+    build:
+      context: ./csr-signer
+    container_name: csr-signer
+    restart: unless-stopped
+    # ports:
+    #   - "8000:8000"
+    volumes:
+      - ./mqtt-server/private/ca.key:/app/ca/ca.key:ro
+      - ./mqtt-server/certs/ca.crt:/app/ca/ca.crt:ro
+    environment:
+      - TZ=Europe/Warsaw
   db:
     image: postgres:15
     container_name: remote-garden-db

@@ -60,3 +60,14 @@ pip-delete-this-directory.txt
 Thumbs.db
 
 app/utils/prepare_esp/spiffs_data
+
+mqtt-server/private/
+mqtt-server/backend
+mqtt-server/*.key
+mqtt-server/mosquitto/certs/*.key
+
+mqtt-server/certs/server.crt
+mqtt-server/mosquitto/certs/server.crt
+
+mqtt-server/mosquitto/data/
+mqtt-server/mosquitto/log/

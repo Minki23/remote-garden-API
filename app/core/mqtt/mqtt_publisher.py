@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 # TODO in future migrate to aiomtt 1.3 and use client.connect() and client.disconnect() methods
 class MqttTopicPublisher:
-    def __init__(self, broker_host: str = "mqtt-broker", port: int = 1883):
+    def __init__(self, broker_host: str = "mqtt-broker", port: int = 8883):
         self.broker_host = broker_host
         self.port = port
 
