@@ -68,7 +68,7 @@ async def _get_auth_service(db=Depends(get_async_session)) -> auth.AuthService:
 async def _get_esp_devices_service(
     db=Depends(get_async_session),
 ) -> esp_devices.EspDeviceService:
-    return esp_devices.EspDeviceService(esp_devices.EspDeviceRepository(db))
+    return esp_devices.EspDeviceService(esp_devices.EspDeviceRepository(db), users.UserRepository(db))
 
 
 async def _get_schedule_service() -> ScheduleService:

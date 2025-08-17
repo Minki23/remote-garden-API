@@ -11,6 +11,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from datetime import datetime, timedelta
 
+from app.repos.users import UserRepository
+
 # TODO podczas tworzenia esp automatycznie sie tworza devices do niego
 # esp juz siedza w bazie i klikajac paruj wysyla sie do esp a esp wysyla do rest sygnal register i ten register wlasnie waliduje itd
 # a do bazy devices tez sa defaultowo - tak zrobic aby nie byly skojarzone z garden
@@ -27,8 +29,9 @@ logger = logging.getLogger(__name__)
 
 
 class EspDeviceService:
-    def __init__(self, repo: EspDeviceRepository):
+    def __init__(self, repo: EspDeviceRepository, user_repo: UserRepository):
         self.repo = repo
+        self.user_repo = user_repo
 
     async def get_own(self, user_id: int) -> List[EspDeviceDTO]:
         devices = await self.repo.get_by_user_id(user_id)
@@ -87,12 +90,16 @@ class EspDeviceService:
         )
 
     async def process_csr_and_issue_cert(
-        self, device_id: str, device_secret: str, csr_pem: str
+        self, device_id: str, device_secret: str, user_key: str, csr_pem: str
     ) -> str:
         logger.info(f"Try to process {device_id} {device_secret}")
         device = await self.repo.get_by_client(device_id, device_secret)
         if not device:
             raise AppException("Invalid device credentials")
+
+        user = await self.user_repo.get_by_user_key(user_key)
+        if not user:
+            raise AppException("Invalid user key")
 
         csr = x509.load_pem_x509_csr(
             csr_pem.encode(), backend=default_backend())
@@ -101,12 +108,15 @@ class EspDeviceService:
 
         cert = self._sign_certificate(csr)
 
+        pub = cert.public_bytes(serialization.Encoding.PEM).decode()
         await self.repo.update(
             device.id,
-            client_crt=cert.public_bytes(serialization.Encoding.PEM).decode()
+            client_crt=pub,
+            user_id=user.id
         )
 
-        return cert.public_bytes(serialization.Encoding.PEM).decode()
+        logger.info(f"Return cert {pub}")
+        return pub
 
     def _sign_certificate(
         self, csr: x509.CertificateSigningRequest

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-trap 'rm -rf spiffs.bin spiffs_data' EXIT
+# trap 'rm -rf spiffs.bin spiffs_data' EXIT
 
 TOKEN=$1
 PORT=${PORT:-/dev/ttyUSB0}
@@ -12,7 +12,6 @@ if [ -z "$TOKEN" ]; then
   exit 1
 fi
 
-# Utwórz katalog jeśli nie istnieje
 mkdir -p spiffs_data
 
 echo "[1/4] Read MAC from esp at $PORT..."
@@ -35,7 +34,7 @@ docker run --rm --network host \
   python-prepare-esp \
   --token "$TOKEN" --mac "$MAC" --api-url "$URL"
 
-# Sprawdź czy pliki zostały utworzone
+
 if [ ! -d "spiffs_data" ] || [ -z "$(ls -A spiffs_data 2>/dev/null)" ]; then
   echo "No SPIFFS data created! Check API connection and credentials."
   exit 1

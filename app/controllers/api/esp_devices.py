@@ -13,9 +13,10 @@ async def register_device(
     csr_pem: str = Body(..., media_type="application/x-pem-file"),
     x_device_id: str = Header(..., alias="X-Device-ID"),
     x_device_secret: str = Header(..., alias="X-Device-Secret"),
+    x_user_key: str = Header(..., alias="X-User-Key"),
 ):
     cert_pem = await service.process_csr_and_issue_cert(
-        device_id=x_device_id, device_secret=x_device_secret, csr_pem=csr_pem
+        device_id=x_device_id, device_secret=x_device_secret, user_key=x_user_key, csr_pem=csr_pem
     )
     return Response(content=cert_pem, media_type="application/x-pem-file")
 
