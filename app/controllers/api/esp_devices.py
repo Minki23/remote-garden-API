@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Header, Body, Response
-from app.core.dependencies import CurrentUserDep, EspDeviceServiceDep
+from app.core.dependencies import CurrentUserDep, EspDeviceServiceDep, GardenDep, UserEspAndGardenDep
 from app.models.dtos.esp_device import AssignGardenDTO, EspDeviceDTO
 from fastapi import status
 
@@ -31,12 +31,10 @@ async def get_esps(
 
 @router.post("/{esp_id}/assign", status_code=status.HTTP_204_NO_CONTENT)
 async def assign_to_garden(
-    esp_id: int,
-    data: AssignGardenDTO,
+    esp_and_garden: UserEspAndGardenDep,
     service: EspDeviceServiceDep,
-    user_id: CurrentUserDep
 ):
-    await service.assign_to_garden(esp_id, data.garden_id, user_id)
+    await service.assign_to_garden(esp_and_garden[0].id, esp_and_garden[1].id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -57,4 +55,24 @@ async def reset_device(
     user_id: CurrentUserDep
 ):
     await service.reset_device(esp_id, user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{esp_id}/resume", status_code=status.HTTP_204_NO_CONTENT)
+async def resume_device(
+    esp_id: int,
+    service: EspDeviceServiceDep,
+    user_id: CurrentUserDep
+):
+    await service.resume_device(esp_id, user_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/{esp_id}/stop", status_code=status.HTTP_204_NO_CONTENT)
+async def stop_device(
+    esp_id: int,
+    service: EspDeviceServiceDep,
+    user_id: CurrentUserDep
+):
+    await service.stop_device(esp_id, user_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

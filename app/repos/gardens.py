@@ -18,7 +18,7 @@ class GardenRepository(SuperRepo[GardenDb]):
     async def get_by_id_and_user(self, garden_id: int, user_id: int) -> GardenDb | None:
         result = await self.db.execute(
             select(self.model).where(
-                self.model.id == garden_id, self.model.user_id == user_id
+                (self.model.id == garden_id) & (self.model.user_id == user_id)
             )
         )
         return result.scalars().first()

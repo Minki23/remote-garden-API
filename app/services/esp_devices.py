@@ -36,12 +36,7 @@ class EspDeviceService:
         devices = await self.repo.get_by_user_id(user_id)
         return [db_esp_to_dto(d) for d in devices]
 
-    async def assign_to_garden(self, esp_id: int, garden_id: int, user_id: int) -> None:
-        esp = await self.repo.get_by_id(esp_id)
-        if not esp or esp.user_id != user_id:
-            raise AppException(
-                message="ESP device not found or not owned by user", status_code=404)
-
+    async def assign_to_garden(self, esp_id: int, garden_id: int) -> None:
         await self.repo.update(esp_id, garden_id=garden_id)
 
     async def unassign_from_garden(self, esp_id: int, user_id: int) -> None:
@@ -65,7 +60,7 @@ class EspDeviceService:
             secret=secret,
         )
 
-    async def reset_device(self, esp_id: int, user_id: int) -> None:
+    async def _validate_device(self, esp_id: int, user_id: int) -> None:
         esp = await self.repo.get_by_id(esp_id)
         if not esp or esp.user_id != user_id:
             raise AppException(
@@ -73,6 +68,11 @@ class EspDeviceService:
 
         if not esp.mac:
             raise AppException("ESP device MAC address not set", 400)
+
+        return esp
+
+    async def reset_device(self, esp_id: int, user_id: int) -> None:
+        esp = await self._validate_device(esp_id, user_id)
 
         await self.repo.update(
             esp_id,
@@ -85,6 +85,24 @@ class EspDeviceService:
         publisher = MqttTopicPublisher()
         await publisher.publish(
             topic=f"{esp.mac}/reset",
+            payload={}
+        )
+
+    async def stop_device(self, esp_id: int, user_id: int) -> None:
+        esp = await self._validate_device(esp_id, user_id)
+
+        publisher = MqttTopicPublisher()
+        await publisher.publish(
+            topic=f"{esp.mac}/stop",
+            payload={}
+        )
+
+    async def resume_device(self, esp_id: int, user_id: int) -> None:
+        esp = await self._validate_device(esp_id, user_id)
+
+        publisher = MqttTopicPublisher()
+        await publisher.publish(
+            topic=f"{esp.mac}/resume",
             payload={}
         )
 
