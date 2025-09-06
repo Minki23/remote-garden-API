@@ -32,9 +32,7 @@ class BaseDeviceHandler(BaseMqttCallbackHandler):
 
             esp = device.esp
             garden_id = esp.garden_id
-
-            user_repo = UserRepository(session)
-            user = await user_repo.get_by_garden_id(garden_id)
+            user = esp.user
             if not user:
                 logger.warning(f"User not found for esp with mac {mac}")
                 return device, None

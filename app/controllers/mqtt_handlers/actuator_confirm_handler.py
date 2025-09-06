@@ -64,8 +64,12 @@ class ActuatorConfirmHandler(BaseDeviceHandler):
                 device_repo = DeviceRepository(session)
                 await device_repo.update(device.id, enabled=new_enabled)
 
-                not_service = NotificationService(
-                    NotificationRepository(session))
-                status = "enabled" if new_enabled else "disabled"
-                not_service.create(NotificationCreateDTO(
-                    user_id=user.id, message=f"Device {device_type} is {status}", type=NotificationType.alert))
+                if user:
+                    not_service = NotificationService(
+                        NotificationRepository(session))
+                    status = "enabled" if new_enabled else "disabled"
+                    await not_service.create(NotificationCreateDTO(
+                        user_id=user.id, message=f"Device {device_type} is {status}", type=NotificationType.alert))
+                else:
+                    logger.warning(
+                        "Cannot send notification because owner of esp is not specified")

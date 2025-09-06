@@ -5,7 +5,7 @@ from app.models.dtos.admin import CreateEspDeviceRequest
 router = APIRouter()
 
 
-@router.post("/create", status_code=201)
+@router.post("/esp/create", status_code=201)
 async def create_esp_device(
     data: CreateEspDeviceRequest,
     service: EspDeviceServiceDep,

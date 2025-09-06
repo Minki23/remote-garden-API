@@ -43,5 +43,5 @@ class ConnHandler(BaseMqttCallbackHandler):
             await esp_repo.update(esp.id, user_id=user.id)
 
             dto = NotificationCreateDTO(
-                user_id=user.id, message=f"ESP {esp.mac} is attached to your account", type=NotificationType.alert)
+                user_id=user.id, message=f"ESP {esp.mac} is connected to your account", type=NotificationType.alert)
             await PushNotificationController.send(dto)

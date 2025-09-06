@@ -15,7 +15,7 @@ def _init_firebase():
     if _firebase_initialized:
         return
 
-    path = "firebase-service-account.json"
+    path = "/app/firebase-service-account.json"
     if not os.path.exists(path):
         logger.error(f"Firebase service account file not found at: {path}")
         return

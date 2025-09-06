@@ -12,4 +12,5 @@ def db_esp_to_dto(db_obj: EspDeviceDb) -> EspDeviceDTO:
         created_at=db_obj.created_at,
         updated_at=db_obj.updated_at,
         garden_id=db_obj.garden_id,
+        status=db_obj.status
     )

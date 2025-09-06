@@ -130,20 +130,21 @@ class EspDeviceDb(SuperDb):
     secret: Mapped[str] = mapped_column(String, nullable=False)
 
     client_key: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    client_crt: Mapped[Optional[str]] = mapped_column(
-        String, nullable=True)  # TODO remove - not needed
+    client_crt: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     garden_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("gardens.id"), nullable=True
     )
     garden: Mapped[Optional["GardenDb"]] = relationship(
-        "GardenDb", back_populates="esp_devices"
+        "GardenDb", back_populates="esp_devices", lazy="selectin"
     )
 
     user_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=True
     )
-    user: Mapped[Optional["UserDb"]] = relationship("UserDb")
+    user: Mapped[Optional["UserDb"]] = relationship(
+        "UserDb", lazy="selectin"
+    )
 
     devices: Mapped[list["DeviceDb"]] = relationship(
         "DeviceDb", back_populates="esp", cascade="all, delete-orphan"

@@ -84,7 +84,7 @@ class EspDeviceService:
 
         publisher = MqttTopicPublisher()
         await publisher.publish(
-            topic=f"/{esp.mac}/reset",
+            topic=f"{esp.mac}/reset",
             payload={}
         )
 
