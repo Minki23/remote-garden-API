@@ -26,30 +26,36 @@ CONTROL_MAP = {
     "heating-mat/off": (DeviceType.HEATER, ControlActionType.HEATING_MAT_OFF),
 }
 
-for path, (device_type, action_type) in CONTROL_MAP.items():
 
-    @router.post(
-        f"/garden/{{garden_id}}/{path}",
-        response_model=bool,
-        name=f"{path.replace('/', '_')}_all",
-    )
+def make_all_handler(device_type: DeviceType, action_type: ControlActionType):
     async def control_all_action(
         service: DeviceServiceDep,
         esps: EspDeviceForGardenDep,
-        device_type=device_type,
-        action_type=action_type,
     ):
         return await service.control_device(esps, device_type, action_type)
 
-    @router.post(
-        f"/esp/{{esp_id}}/{path}",
-        response_model=bool,
-        name=f"{path.replace('/', '_')}_one",
-    )
+    return control_all_action
+
+
+def make_one_handler(device_type: DeviceType, action_type: ControlActionType):
     async def control_one_action(
         service: DeviceServiceDep,
         esp: SpecificEspDeviceForGardenDep,
-        device_type=device_type,
-        action_type=action_type,
     ):
         return await service.control_device([esp], device_type, action_type)
+
+    return control_one_action
+
+
+for path, (device_type, action_type) in CONTROL_MAP.items():
+    router.post(
+        f"/garden/{{garden_id}}/{path}",
+        response_model=bool,
+        name=f"{path.replace('/', '_')}_all",
+    )(make_all_handler(device_type, action_type))
+
+    router.post(
+        f"/esp/{{esp_id}}/{path}",
+        response_model=bool,
+        name=f"{path.replace('/', '_')}_one",
+    )(make_one_handler(device_type, action_type))

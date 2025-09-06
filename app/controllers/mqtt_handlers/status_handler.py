@@ -13,7 +13,7 @@ class StatusHandler(BaseMqttCallbackHandler):
     async def __call__(self, topic: str, payload: dict):
         logger.info(f"[STATUS] topic={topic}, payload={payload}")
 
-        status = payload.get("status")
+        status = payload.get("online")
         if status is None:
             logger.warning(f"Missing 'status' in payload: {payload}")
             return

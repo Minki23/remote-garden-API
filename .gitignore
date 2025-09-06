@@ -71,3 +71,5 @@ mqtt-server/mosquitto/certs/server.crt
 
 mqtt-server/mosquitto/data/
 mqtt-server/mosquitto/log/
+
+firebase-service-account.json

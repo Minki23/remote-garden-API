@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Enum as SqlEnum,
     Boolean,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import mapped_column, relationship, Mapped, DeclarativeBase
 from .enums import DeviceType, NotificationType
@@ -30,6 +31,21 @@ class SuperDb(Base):
     )
 
 
+class UserDeviceDb(SuperDb):
+    __tablename__ = "user_devices"
+    __table_args__ = (UniqueConstraint(
+        "fcm_token", name="uq_user_devices_fcm_token"),)
+
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True)
+    fcm_token: Mapped[str] = mapped_column(String, nullable=False)
+    platform: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    last_seen: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow)
+
+    user: Mapped["UserDb"] = relationship("UserDb", back_populates="devices")
+
+
 class UserDb(SuperDb):
     __tablename__ = "users"
 
@@ -48,6 +64,8 @@ class UserDb(SuperDb):
     notifications: Mapped[list["NotificationDb"]] = relationship(
         "NotificationDb", back_populates="user"
     )
+    devices: Mapped[list["UserDeviceDb"]] = relationship(
+        "UserDeviceDb", back_populates="user", cascade="all, delete-orphan")
 
 
 class GardenDb(SuperDb):
@@ -74,7 +92,7 @@ class DeviceDb(SuperDb):
     enabled: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
 
     esp: Mapped["EspDeviceDb"] = relationship(
-        "EspDeviceDb", back_populates="devices")
+        "EspDeviceDb", back_populates="devices", lazy="selectin")
     readings: Mapped[list["ReadingDb"]] = relationship(
         "ReadingDb", back_populates="device", cascade="all, delete-orphan"
     )
@@ -89,7 +107,7 @@ class ReadingDb(SuperDb):
         DateTime, default=datetime.utcnow)
 
     device: Mapped["DeviceDb"] = relationship(
-        "DeviceDb", back_populates="readings")
+        "DeviceDb", back_populates="readings", lazy="selectin")
 
 
 class NotificationDb(SuperDb):
@@ -112,7 +130,8 @@ class EspDeviceDb(SuperDb):
     secret: Mapped[str] = mapped_column(String, nullable=False)
 
     client_key: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    client_crt: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    client_crt: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True)  # TODO remove - not needed
 
     garden_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("gardens.id"), nullable=True

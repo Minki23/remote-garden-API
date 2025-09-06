@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from app.core.dependencies import AdminUserDep, DeviceServiceDep, EspDeviceServiceDep
 from app.models.dtos.admin import CreateEspDeviceRequest
 
-router = APIRouter(prefix="/esp", tags=["Device provisioning"])
+router = APIRouter()
 
 
 @router.post("/create", status_code=201)

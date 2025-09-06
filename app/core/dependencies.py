@@ -18,6 +18,7 @@ from app.mappers.notifications import db_to_dto as db_notification_to_dto
 from app.repos.gardens import GardenRepository
 from app.repos.devices import DeviceRepository
 from app.repos.notifications import NotificationRepository
+from app.repos.user_device import UserDeviceRepository
 from app.services import (
     users,
     gardens,
@@ -31,6 +32,8 @@ from app.services.schedules import ScheduleService
 from app.core.db_context import get_async_session
 from app.core.security.deps import get_current_user_id, get_current_admin_user
 from fastapi import Security
+
+from app.services.user_devices import UserDeviceService
 
 # --- Service Factories ---
 
@@ -181,7 +184,12 @@ async def _get_user_esp_and_garden(
 
     return db_esp_to_dto(esp_device), db_to_garden_dto(garden)
 
+
+def _get_user_device_service(db=Depends(get_async_session),) -> UserDeviceService:
+    return UserDeviceService(UserDeviceRepository(db))
+
 # --- Conversion Deps ---
+
 
 _WEEKDAY_MAP = {
     "mon": "1",
@@ -240,3 +248,5 @@ AdminUserDep = Annotated[UserDb, Depends(get_current_admin_user)]
 UserEspAndGardenDep = Annotated[
     tuple[EspDeviceDTO, GardenDTO], Depends(_get_user_esp_and_garden)
 ]
+UserDeviceServiceDep = Annotated[UserDeviceService, Depends(
+    _get_user_device_service)]

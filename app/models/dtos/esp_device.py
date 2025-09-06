@@ -9,7 +9,6 @@ class EspDeviceDTO(BaseModel):
     secret: str
     client_key: Optional[str]
     client_crt: Optional[str]
-    last_seen_at: datetime
     created_at: datetime
     updated_at: datetime
     garden_id: Optional[int]

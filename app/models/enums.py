@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class DeviceType(str, Enum):
@@ -31,12 +31,12 @@ class ScheduleActionType(str, Enum):
     HEATING_MAT_OFF = "HEATING_MAT_OFF"
 
 
-class ControlActionType(str, Enum):
-    WATER_ON = "WATER_ON"
-    WATER_OFF = "WATER_OFF"
-    ATOMIZE_ON = "ATOMIZE_ON"
-    ATOMIZE_OFF = "ATOMIZE_OFF"
-    FAN_ON = "FAN_ON"
-    FAN_OFF = "FAN_OFF"
-    HEATING_MAT_ON = "HEATING_MAT_ON"
-    HEATING_MAT_OFF = "HEATING_MAT_OFF"
+class ControlActionType(IntEnum):
+    WATER_ON = 0
+    WATER_OFF = 1
+    ATOMIZE_ON = 2
+    ATOMIZE_OFF = 3
+    FAN_ON = 4
+    FAN_OFF = 5
+    HEATING_MAT_ON = 6
+    HEATING_MAT_OFF = 7

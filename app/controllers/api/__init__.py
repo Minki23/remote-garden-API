@@ -10,6 +10,7 @@ from . import (
     auth,
     esp_devices,
     admin,
+    user_devices
 )
 
 router = APIRouter()
@@ -20,7 +21,10 @@ router.include_router(readings.router, prefix="/readings", tags=["Readings"])
 router.include_router(
     notifications.router, prefix="/notifications", tags=["Notifications"]
 )
-router.include_router(schedules.router, prefix="/schedules", tags=["Schedules"])
+router.include_router(
+    schedules.router, prefix="/schedules", tags=["Schedules"])
 router.include_router(auth.router, prefix="/auth", tags=["Auth"])
 router.include_router(esp_devices.router, prefix="/esp", tags=["Esp Devices"])
 router.include_router(admin.router, prefix="/admin", tags=["Admin"])
+router.include_router(user_devices.router, prefix="/userdevices",
+                      tags=["User Devices"])

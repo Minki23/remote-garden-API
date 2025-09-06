@@ -8,5 +8,5 @@ def db_to_dto(reading: ReadingDb) -> ReadingDTO:
         device_id=reading.device_id,
         value=reading.value,
         timestamp=reading.timestamp,
-        esp_id=reading.device.esp
+        esp_id=reading.device.esp.id
     )

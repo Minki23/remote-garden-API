@@ -1,15 +1,16 @@
 from app.core.celery.celery_app import celery_app
-from app.models.enums import ScheduleActionType
+from app.models.dtos.notifications import NotificationCreateDTO
+from app.models.enums import NotificationType, ScheduleActionType
 import logging
 import asyncio
 from app.core.db_context import async_session_maker
 from app.repos.devices import DeviceRepository
 from app.repos.esp_devices import EspDeviceRepository
+from app.repos.users import UserRepository
 from app.services.devices import DeviceService
 from app.models.enums import DeviceType, ControlActionType
 from app.exceptions.scheme import AppException
-from app.services.esp_devices import EspDeviceService
-
+from app.controllers.push.push_notification import PushNotificationController
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ _ACTION_MAP = {
 }
 
 
-@celery_app.task(name="app.schedulers.tasks.run_garden_scheduled_action")
+@celery_app.task(name="app.schedulers.tasks.run_scheduled_action")
 def run_scheduled_action(garden_id: int, action: ScheduleActionType):
     async def inner():
         async with async_session_maker() as db:
@@ -61,9 +62,14 @@ def run_scheduled_action(garden_id: int, action: ScheduleActionType):
                     logger.warning(f"No handler for action: {action}")
                     return
 
-                await dev_service.control_device(esp_repo.get_by_garden_id(garden_id), *_ACTION_MAP[action])
+                await dev_service.control_device(await esp_repo.get_by_garden_id(garden_id), *_ACTION_MAP[action])
                 logger.info(
                     f"[Scheduled] Executed {action} on garden {garden_id}")
+
+                user_repo = UserRepository(db)
+                dto = NotificationCreateDTO(
+                    user_id=(await user_repo.get_by_garden_id(garden_id)).id, message=f"Action {action} is executed", type=NotificationType.alert)
+                await PushNotificationController.send(dto)
 
             except AppException as e:
                 logger.error(f"[Scheduled] AppException: {e.message}")

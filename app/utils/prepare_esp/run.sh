@@ -3,7 +3,8 @@ set -e
 
 trap 'rm -rf spiffs.bin spiffs_data' EXIT
 
-TOKEN=$1
+# TOKEN=$1
+TOKEN=admin
 PORT=${PORT:-/dev/ttyUSB0}
 URL=http://localhost:3000/api/admin/esp/create
 

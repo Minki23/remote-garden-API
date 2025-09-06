@@ -55,7 +55,7 @@ class DeviceService:
         publisher = MqttTopicPublisher()
 
         for device in matching_devices:
-            payload = {"action": {"id": int(action)}}
+            payload = {"action": {"id": action.value}}
             await publisher.publish(
                 topic=f"{device.esp.mac}/device/control",
                 payload=payload,

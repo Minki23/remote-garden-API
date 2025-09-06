@@ -18,10 +18,25 @@ from controllers.api import router as api_router
 from controllers.websocket import router as ws_router
 from fastapi.middleware.cors import CORSMiddleware
 # from controllers.live import router as live_router
+import colorlog
 
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+formatter = colorlog.ColoredFormatter(
+    "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    log_colors={
+        "DEBUG": "cyan",
+        "INFO": "green",
+        "WARNING": "yellow",
+        "ERROR": "red",
+        "CRITICAL": "bold_red",
+    },
 )
+
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+logger.handlers = [handler]
 
 logging.getLogger("sqlalchemy").setLevel(logging.WARNING)
 logging.getLogger("sqlalchemy").disabled = True

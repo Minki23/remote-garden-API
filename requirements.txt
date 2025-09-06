@@ -20,3 +20,5 @@ av>=10.0.0
 numpy>=1.24.0
 opencv-python>=4.9.0.80
 esptool>=4.6.2
+colorlog
+firebase-admin

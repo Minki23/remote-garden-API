@@ -34,6 +34,7 @@ services:
       - ./mqtt-server/backend/backend.crt:/app/app/ca/backend.crt:ro
       - ./mqtt-server/backend/backend.key:/app/app/ca/backend.key:ro
       - ./mqtt-server/certs/ca.crt:/app/app/ca/ca.crt:ro
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
     # extra_hosts:
     #   - "cam.local:172.30.59.180" # change on zerotier one if needed
     # devices:
@@ -63,6 +64,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5000:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d garden" ]
+      interval: 5s
+      retries: 5
+      timeout: 5s
 
   redis:
     image: redis:6.2-alpine

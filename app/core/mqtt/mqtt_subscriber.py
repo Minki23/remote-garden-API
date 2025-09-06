@@ -6,6 +6,7 @@ from typing import Callable, Awaitable, Dict, Self
 import logging
 
 from app.core.mqtt.base_mqtt_callback_handler import BaseMqttCallbackHandler
+from app.core.mqtt.tls_context import create_tls_context
 from app.exceptions.scheme import AppException
 
 logger = logging.getLogger(__name__)
@@ -32,11 +33,13 @@ class MqttTopicSubscriber:
         )
         self._client: Client | None = None
         self._initialized = True
+        self.tls_context = create_tls_context()
 
     async def start(self):
         logger.info(
             f"Connecting to MQTT broker at {self.broker_host}:{self.port}")
-        self._client = Client(self.broker_host, port=self.port)
+        self._client = Client(
+            self.broker_host, port=self.port, tls_context=self.tls_context)
 
         async with self._client as client:
             async for message in client.messages:

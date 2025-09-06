@@ -1,4 +1,5 @@
 import logging
+from app.controllers.push.push_notification import PushNotificationController
 from app.core.db_context import async_session_maker
 from app.core.mqtt.base_mqtt_callback_handler import BaseMqttCallbackHandler
 from app.models.dtos.notifications import NotificationCreateDTO
@@ -41,6 +42,6 @@ class ConnHandler(BaseMqttCallbackHandler):
 
             await esp_repo.update(esp.id, user_id=user.id)
 
-            not_service = NotificationService(NotificationRepository(session))
-            not_service.create(NotificationCreateDTO(
-                user_id=user.id, message=f"ESP {esp.mac} is attached to your account", type=NotificationType.alert))
+            dto = NotificationCreateDTO(
+                user_id=user.id, message=f"ESP {esp.mac} is attached to your account", type=NotificationType.alert)
+            await PushNotificationController.send(dto)

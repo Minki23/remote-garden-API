@@ -3,6 +3,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.backends import default_backend
 from datetime import datetime, timedelta
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -13,9 +14,14 @@ with open("ca/ca.crt", "rb") as f:
     ca_cert = x509.load_pem_x509_certificate(f.read(), default_backend())
 
 
+class CSRRequest(BaseModel):
+    csr_pem: str
+
+
 @app.post("/sign-csr")
-def sign_csr(csr_pem: str):
-    csr = x509.load_pem_x509_csr(csr_pem.encode(), backend=default_backend())
+def sign_csr(req: CSRRequest):
+    csr = x509.load_pem_x509_csr(
+        req.csr_pem.encode(), backend=default_backend())
     if not csr.is_signature_valid:
         raise HTTPException(status_code=400, detail="Invalid CSR signature")
 

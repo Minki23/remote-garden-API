@@ -31,8 +31,8 @@ class DeviceReadingHandler(BaseDeviceHandler):
             return
         device_type = SENSOR_STR_TO_DEVICE_TYPE[sensor_str]
 
-        value = payload.get("value")
-        if value is None:
+        values = payload.get("values")
+        if values is None:
             logger.warning(f"Missing 'value' in {device_type.name} payload.")
             return
 
@@ -48,11 +48,13 @@ class DeviceReadingHandler(BaseDeviceHandler):
             device_type,
             payload,
             websocket_event="new_reading",
-            extra_fields={"value": value},
+            extra_fields={"values": values},
         )
 
         if device:
             async with async_session_maker() as session:
                 reading_service = ReadingService(ReadingRepository(session))
-                dto = ReadingCreateDTO(device_id=device.id, value=str(value))
-                await reading_service.create(dto)
+                for value in values:
+                    dto = ReadingCreateDTO(
+                        device_id=device.id, value=str(value))
+                    await reading_service.create(dto)

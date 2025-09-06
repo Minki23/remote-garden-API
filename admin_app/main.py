@@ -9,6 +9,7 @@ from app.models.db import (
     NotificationDb,
     ReadingDb,
     EspDeviceDb,
+    UserDeviceDb,
 )
 from app.core.config import CONFIG
 
@@ -93,9 +94,22 @@ class ReadingAdmin(ModelView, model=ReadingDb):
     ]
 
 
+class UserDeviceAdmin(ModelView, model=UserDeviceDb):
+    column_list = [
+        UserDeviceDb.id,
+        UserDeviceDb.user_id,
+        UserDeviceDb.fcm_token,
+        UserDeviceDb.platform,
+        UserDeviceDb.last_seen,
+        UserDeviceDb.created_at,
+        UserDeviceDb.updated_at,
+    ]
+
+
 admin.add_view(UserAdmin)
 admin.add_view(GardenAdmin)
 admin.add_view(EspDeviceAdmin)
 admin.add_view(DeviceAdmin)
 admin.add_view(NotificationAdmin)
 admin.add_view(ReadingAdmin)
+admin.add_view(UserDeviceAdmin)
