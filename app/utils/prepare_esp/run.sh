@@ -7,6 +7,8 @@ trap 'rm -rf spiffs.bin spiffs_data' EXIT
 TOKEN=admin
 PORT=${PORT:-/dev/ttyUSB0}
 URL=http://localhost:3000/api/admin/esp/create
+FLASH_OFFSET=0x220000
+LITTLEFS_SIZE=0x60000
 
 if [ -z "$TOKEN" ]; then
   echo "Usage: $0 <token>"
@@ -41,22 +43,16 @@ if [ ! -d "spiffs_data" ] || [ -z "$(ls -A spiffs_data 2>/dev/null)" ]; then
   exit 1
 fi
 
-echo "[3/4] Building SPIFFS image..."
+echo "[3/4] Running LittleFS image..."
 docker run --rm \
-  -v $(pwd)/spiffs_data:/data \
-  -v $(pwd):/output \
-  espressif/idf:latest \
-  bash -c "
-    cd /tmp && \
-    wget -q https://github.com/igrr/mkspiffs/releases/download/0.2.3/mkspiffs-0.2.3-arduino-esp32-linux64.tar.gz && \
-    tar -xzf mkspiffs-*.tar.gz && \
-    MKSPIFFS=\$(find . -name 'mkspiffs' -type f | head -1) && \
-    chmod +x \$MKSPIFFS && \
-    \$MKSPIFFS -c /data -b 4096 -p 256 -s 393216 /output/spiffs.bin
-  "
+    -v $(pwd)/spiffs_data:/data \
+    -v $(pwd):/output \
+    mklittlefs-img \
+    -c /data -b 4096 -p 256 -s ${LITTLEFS_SIZE} /output/littlefs.bin
 
 echo "[4/4] ESP32 flashing..."
 docker run --rm --device=${PORT}:${PORT} -v $(pwd):/work espressif/idf:latest \
-  esptool.py --chip esp32 --port ${PORT} --baud 460800 write_flash 0x220000 /work/spiffs.bin
+  esptool.py --chip esp32 --port ${PORT} --baud 460800 \
+  write_flash --encrypt ${FLASH_OFFSET} /work/littlefs.bin
 
 echo "Ready!!"
