@@ -11,7 +11,6 @@ from app.models.db import (
 )
 from app.core.db_context import async_session_maker
 
-# Setup logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -86,12 +85,11 @@ async def create_users_and_devices(session, num_users=4):
     platforms = ["android", "ios"]
 
     for i in range(num_users):
-        # Create user
         user = UserDb(
             email=f"gardener{i+1}@greenhouse.com",
             google_sub=f"google_sub_{uuid.uuid4().hex[:16]}",
             auth=f"auth_{uuid.uuid4().hex}",
-            admin=(i == 0),  # First user is admin
+            admin=(i == 0),
         )
         session.add(user)
         await session.flush()
@@ -100,7 +98,6 @@ async def create_users_and_devices(session, num_users=4):
         logger.info(
             f"✓ Created user: {user.email} {'(ADMIN)' if user.admin else ''}")
 
-        # Create mobile devices for user
         num_devices = random.randint(1, 3)
         for d in range(num_devices):
             user_device = UserDeviceDb(
@@ -124,7 +121,6 @@ async def create_gardens_with_esp_devices(session, users):
         num_gardens = random.randint(1, 3)
 
         for g in range(num_gardens):
-            # Create garden
             garden = GardenDb(
                 user_id=user.id,
                 name=f"{user.email.split('@')[0]}_garden_{g+1}",
@@ -139,7 +135,6 @@ async def create_gardens_with_esp_devices(session, users):
             logger.info(
                 f"  → Notifications: {garden.send_notifications}, Automation: {garden.enable_automation}")
 
-            # Create ESP devices for garden
             num_esp = random.randint(1, 2)
             for e in range(num_esp):
                 mac_address = ":".join(
@@ -154,7 +149,7 @@ async def create_gardens_with_esp_devices(session, users):
                         True, False]) else None,
                     garden_id=garden.id,
                     user_id=user.id,
-                    status=random.choice([True, True, False])  # 66% online
+                    status=random.choice([True, True, False])
                 )
                 session.add(esp_device)
                 await session.flush()
@@ -169,7 +164,6 @@ async def create_gardens_with_esp_devices(session, users):
 async def create_devices_and_readings(session, esp_devices):
     """Create sensor/actuator devices and their readings."""
 
-    # Define which devices each ESP should have
     essential_sensors = [
         DeviceType.AIR_TEMPERATURE_SENSOR,
         DeviceType.AIR_HUMIDITY_SENSOR,
@@ -187,10 +181,8 @@ async def create_devices_and_readings(session, esp_devices):
     ]
 
     for esp in esp_devices:
-        # Add all essential sensors
         device_types_to_add = essential_sensors.copy()
 
-        # Add random actuators
         num_actuators = random.randint(1, len(optional_actuators))
         selected_actuators = random.sample(optional_actuators, num_actuators)
         device_types_to_add.extend(selected_actuators)
@@ -199,7 +191,6 @@ async def create_devices_and_readings(session, esp_devices):
             f"  ESP {esp.mac}: Adding {len(device_types_to_add)} devices")
 
         for device_type in device_types_to_add:
-            # Create device
             device = DeviceDb(
                 esp_id=esp.id,
                 type=device_type,
@@ -208,7 +199,6 @@ async def create_devices_and_readings(session, esp_devices):
             session.add(device)
             await session.flush()
 
-            # Create readings for the device
             num_readings = random.randint(3, 8)
             for r in range(num_readings):
                 reading_time = datetime.utcnow() - timedelta(
@@ -243,7 +233,7 @@ async def create_notifications(session, users):
                 type=notif_type,
                 read=random.choice([True, False]),
                 created_at=datetime.utcnow() - timedelta(
-                    hours=random.randint(0, 168)  # Last week
+                    hours=random.randint(0, 168)
                 )
             )
             session.add(notification)
@@ -256,7 +246,6 @@ async def print_summary(session):
     """Print summary of created data."""
     from sqlalchemy import func, select
 
-    # Count records
     user_count = (await session.execute(select(func.count(UserDb.id)))).scalar()
     garden_count = (await session.execute(select(func.count(GardenDb.id)))).scalar()
     esp_count = (await session.execute(select(func.count(EspDeviceDb.id)))).scalar()
@@ -266,42 +255,36 @@ async def print_summary(session):
     user_device_count = (await session.execute(select(func.count(UserDeviceDb.id)))).scalar()
 
     print("\n" + "="*50)
-    print("📊 MOCK DATA GENERATION SUMMARY")
+    print("MOCK DATA GENERATION SUMMARY")
     print("="*50)
-    print(f"👥 Users: {user_count}")
-    print(f"📱 User Devices: {user_device_count}")
-    print(f"🌱 Gardens: {garden_count}")
-    print(f"🔧 ESP Devices: {esp_count}")
-    print(f"📡 Sensor/Actuator Devices: {device_count}")
-    print(f"📈 Sensor Readings: {reading_count}")
-    print(f"🔔 Notifications: {notification_count}")
+    print(f"Users: {user_count}")
+    print(f"User Devices: {user_device_count}")
+    print(f"Gardens: {garden_count}")
+    print(f"ESP Devices: {esp_count}")
+    print(f"Sensor/Actuator Devices: {device_count}")
+    print(f"Sensor Readings: {reading_count}")
+    print(f"Notifications: {notification_count}")
     print("="*50)
 
 
 async def generate_mock_data():
     """Main function to generate all mock data."""
-    logger.info("🚀 Starting mock data generation...")
+    logger.info("Starting mock data generation...")
 
     async with async_session_maker() as session:
         try:
-            # Clear existing data
             await clear_all_data(session)
 
-            # Create users and their devices
             users = await create_users_and_devices(session)
 
-            # Create gardens with ESP devices
             esp_devices = await create_gardens_with_esp_devices(session, users)
 
-            # Create sensor devices and readings
             await create_devices_and_readings(session, esp_devices)
 
-            # Create notifications
             await create_notifications(session, users)
 
-            # Commit all changes
             await session.commit()
-            logger.info("💾 All data committed to database")
+            logger.info("All data committed to database")
 
             # Print summary
             await print_summary(session)
@@ -309,7 +292,7 @@ async def generate_mock_data():
             logger.info("✅ Mock data generation completed successfully!")
 
         except Exception as e:
-            logger.error(f"❌ Error during mock data generation: {e}")
+            logger.error(f"Error during mock data generation: {e}")
             await session.rollback()
             raise
 
