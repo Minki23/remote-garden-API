@@ -134,33 +134,36 @@ services:
       - ./app:/admin_app/app
     environment:
       DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
+  # mock-data:
+  #   build: .
+  #   container_name: remote-garden-mock-data
+  #   command: [ "python", "-m", "app.utils.scripts.mock_data" ]
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     PYTHONPATH: /app
+  #     DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
+  #   volumes:
+  #     - ./:/app
+  #   # profiles:
+  #   #   - manual
 
-  mock-data:
-    build: .
-    container_name: remote-garden-mock-data
-    command: [ "python", "-m", "app.utils.scripts.mock_data" ]
-    depends_on:
-      - db
-    environment:
-      PYTHONPATH: /app
-      DB_CONNECTION_STRING: "postgresql+asyncpg://user:password@db:5432/garden"
-    volumes:
-      - ./:/app
-    profiles:
-      - manual
-
-  mqtt-mock-publisher:
-    build: .
-    container_name: mqtt-mock-publisher
-    command: [ "python", "-m", "app.utils.mock_mqtt.mock_device_publisher" ]
-    depends_on:
-      - mqtt-broker
-    environment:
-      PYTHONPATH: /app
-    volumes:
-      - ./:/app
-    profiles:
-      - manual
+  # mqtt-mock-publisher:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.mock
+  #   container_name: mqtt-mock-publisher
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - mqtt-broker
+  #   environment:
+  #     PYTHONPATH: /app
+  #   volumes:
+  #     - ./mqtt-server/mock-client:/app/certs/mock-client:ro
+  #     - ./mqtt-server/certs:/app/certs/ca:ro
+  #   # Remove or fix the profiles section - 'manuals' should be 'manual'
+  #   # profiles:
+  #   #   - manual
 
 volumes:
   postgres_data:

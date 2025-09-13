@@ -55,7 +55,7 @@ class FirebaseWrapper:
                 data=data or {},
                 tokens=tokens,
             )
-            response = messaging.send_multicast(message)
+            response = messaging.send_each_for_multicast(message)
             return response
         except Exception as e:
             logger.exception(f"Error sending push notification: {e}")

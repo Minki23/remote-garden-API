@@ -63,6 +63,7 @@ app/utils/prepare_esp/spiffs_data
 
 mqtt-server/private/
 mqtt-server/backend
+mqtt-server/mock-client
 mqtt-server/*.key
 mqtt-server/mosquitto/certs/*.key
 
