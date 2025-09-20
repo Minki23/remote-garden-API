@@ -14,7 +14,7 @@ logging.basicConfig(
 
 BROKER = "mqtt-broker"
 PORT = 8883
-DEVICE_MAC = "77:9B:2A:89:B7:80"  # schange base on your user
+DEVICE_MAC = "77:9B:2A:89:B7:80"  # change base on your user
 USER_KEY = "auth_f28a656b452944f3b3916d681558028f"  # change base on your user
 
 CA_CERT = "/app/certs/ca/ca.crt"
