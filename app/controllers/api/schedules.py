@@ -1,6 +1,8 @@
+from app.core.security.deps import SubjectType
 from app.models.dtos.schedules import ScheduleCreateDTO
 from fastapi import APIRouter, Body, Response
 from app.core.dependencies import (
+    CurrentSubjectDep,
     GardenDep,
     ScheduleServiceDep,
     UserScheduleDep,
@@ -12,8 +14,8 @@ router = APIRouter()
 
 
 @router.get("/{garden_id}/")
-async def list_schedules(garden: GardenDep, service: ScheduleServiceDep):
-    return service.list(garden_id=garden.id)
+async def list_schedules(garden: GardenDep, service: ScheduleServiceDep, subject: CurrentSubjectDep):
+    return service.list(garden.id)
 
 
 @router.post("/{garden_id}/")
@@ -21,23 +23,25 @@ async def create_schedule(
     garden: GardenDep,
     service: ScheduleServiceDep,
     dto: ScheduleCreateDTO,
+    subject: CurrentSubjectDep,
 ):
-    return {"task_id": service.create(garden.id, dto.cron, dto.action)}
+    return {"task_id": service.create(garden.id, dto.cron, dto.action, subject[1] == SubjectType.AGENT)}
 
 
 @router.put("/{task_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def update_schedule(
     task_id: UserScheduleDep,
     service: ScheduleServiceDep,
+    subject: CurrentSubjectDep,
     cron: str = Body(...),
 ):
-    service.update(task_id, cron)
+    service.update(task_id, cron, subject[1] == SubjectType.AGENT)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.delete("/{task_id}/")
-async def delete_schedule(task_id: UserScheduleDep, service: ScheduleServiceDep):
-    service.delete(task_id)
+async def delete_schedule(task_id: UserScheduleDep, service: ScheduleServiceDep, subject: CurrentSubjectDep,):
+    service.delete(task_id, subject[1] == SubjectType.AGENT)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

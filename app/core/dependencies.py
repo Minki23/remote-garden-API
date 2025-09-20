@@ -1,5 +1,6 @@
 from app.mappers.esp_devices import db_esp_to_dto
 from app.models.dtos.esp_device import AssignGardenDTO, EspDeviceDTO
+from app.repos.agents import AgentRepository
 from app.repos.esp_devices import EspDeviceRepository
 from app.repos.schedules import ScheduleRepository
 from fastapi import Path, Body, Depends
@@ -11,7 +12,7 @@ from app.models.dtos.gardens import GardenDTO
 from app.models.dtos.devices import DeviceDTO
 from app.models.dtos.notifications import NotificationDTO
 from app.models.dtos.schedules import WeeklyScheduleDTO
-from app.models.db import EspDeviceDb, GardenDb, UserDb
+from app.models.db import AgentDb, EspDeviceDb, GardenDb, UserDb
 from app.mappers.gardens import db_to_garden_dto
 from app.mappers.devices import db_to_dto as db_device_to_dto
 from app.mappers.notifications import db_to_dto as db_notification_to_dto
@@ -28,9 +29,11 @@ from app.services import (
     auth,
     esp_devices,
 )
+from app.services import agents
+from app.services.agents import AgentService
 from app.services.schedules import ScheduleService
 from app.core.db_context import get_async_session
-from app.core.security.deps import get_current_user_id, get_current_admin_user
+from app.core.security.deps import SubjectType, _get_current_subject, get_current_user_id, get_current_admin_user, get_current_agent
 from fastapi import Security
 
 from app.services.user_devices import UserDeviceService
@@ -65,7 +68,9 @@ async def _get_reading_service(
 
 
 async def _get_auth_service(db=Depends(get_async_session)) -> auth.AuthService:
-    return auth.AuthService(users.UserRepository(db))
+    return auth.AuthService(
+        users.UserRepository(db)
+    )
 
 
 async def _get_esp_devices_service(
@@ -188,6 +193,10 @@ async def _get_user_esp_and_garden(
 def _get_user_device_service(db=Depends(get_async_session),) -> UserDeviceService:
     return UserDeviceService(UserDeviceRepository(db))
 
+
+async def _get_agent_service(db=Depends(get_async_session)) -> AgentService:
+    return AgentService(AgentRepository(db))
+
 # --- Conversion Deps ---
 
 
@@ -245,8 +254,12 @@ WeeklyCronDep = Annotated[
 CurrentUserDep = Annotated[int, Security(get_current_user_id)]
 UserScheduleDep = Annotated[str, Depends(_get_user_schedule)]
 AdminUserDep = Annotated[UserDb, Depends(get_current_admin_user)]
+AgentDep = Annotated[AgentDb, Depends(get_current_agent)]
+CurrentSubjectDep = Annotated[tuple[int,
+                                    SubjectType], Depends(_get_current_subject)]
 UserEspAndGardenDep = Annotated[
     tuple[EspDeviceDTO, GardenDTO], Depends(_get_user_esp_and_garden)
 ]
 UserDeviceServiceDep = Annotated[UserDeviceService, Depends(
     _get_user_device_service)]
+AgentServiceDep = Annotated[AgentService, Depends(_get_agent_service)]

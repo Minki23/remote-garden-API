@@ -5,8 +5,10 @@ from app.core.security.jwt import decode_access_token
 from app.exceptions.scheme import AppException
 import logging
 
-from app.models.db import UserDb
+from app.models.db import UserDb, AgentDb, GardenDb
 from app.repos.users import UserRepository
+from sqlalchemy.future import select
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 bearer_scheme = HTTPBearer(
@@ -14,9 +16,14 @@ bearer_scheme = HTTPBearer(
 )  # @TODO change to True if you want to enforce authentication
 
 
-async def _get_current_user_id(
+class SubjectType(str, Enum):
+    USER = "user"
+    AGENT = "agent"
+
+
+async def _get_current_subject(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> int:
+) -> tuple[int, SubjectType]:
     logger.info("Validating user credentials")
     logger.info(f"Received credentials: {credentials}")
 
@@ -25,13 +32,28 @@ async def _get_current_user_id(
 
     token = credentials.credentials
     payload = decode_access_token(token)
-    user_id = payload.get("sub")
-    if user_id is None:
+
+    sub_id = payload.get("sub")
+    sub_type = payload.get("sub_type", "user")  # domyślnie user
+
+    if sub_id is None:
         if token == "admin":
-            return 1
+            return (1, SubjectType.USER)
         raise AppException(status_code=401, message="Invalid token")
 
-    return int(user_id)
+    if sub_type not in ("user", "agent"):
+        raise AppException(status_code=401, message="Invalid subject type")
+
+    return int(sub_id), SubjectType(sub_type)
+
+
+async def _get_current_user_id(
+    subject=Depends(_get_current_subject),
+) -> int:
+    sub_id, sub_type = subject
+    if sub_type != SubjectType.USER:
+        raise AppException(status_code=403, message="User access required")
+    return sub_id
 
 
 get_current_user_id = _get_current_user_id
@@ -51,3 +73,22 @@ async def _get_current_admin_user(
 
 
 get_current_admin_user = _get_current_admin_user
+
+
+async def _get_current_agent(
+    subject=Depends(_get_current_subject),
+    db=Depends(get_async_session),
+) -> AgentDb:
+    sub_id, sub_type = subject
+    if sub_type != SubjectType.AGENT:
+        raise AppException(status_code=403, message="Agent access required")
+
+    result = await db.execute(select(AgentDb).where(AgentDb.id == sub_id))
+    agent = result.scalars().first()
+    if not agent:
+        raise AppException(status_code=401, message="Agent not found")
+
+    return agent
+
+
+get_current_agent = _get_current_agent

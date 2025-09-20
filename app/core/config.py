@@ -13,6 +13,7 @@ class Config:
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+    AGENT_TRIGGER: int = 60
     SECRET_KEY: str = getenv("SECRET", "default_secret_key")
 
     GOOGLE_CLIENT_ID: str = getenv("GOOGLE_CLIENT_ID")

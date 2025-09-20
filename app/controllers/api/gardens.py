@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from app.core.dependencies import GardenServiceDep, CurrentUserDep, GardenDep
+from app.core.config import CONFIG
+from app.core.dependencies import GardenServiceDep, CurrentUserDep, GardenDep, AgentServiceDep, ScheduleServiceDep
 from app.models.dtos.gardens import (
     GardenCreateDTO,
     GardenDTO,
@@ -15,8 +16,13 @@ async def create_garden(
     dto: GardenCreateDTO,
     service: GardenServiceDep,
     user_id: CurrentUserDep,
+    agent_service: AgentServiceDep,
+    schedule_service: ScheduleServiceDep
 ):
-    return await service.create_garden(dto, user_id)
+    garden = await service.create_garden(dto, user_id)
+    await agent_service.create_agent_for_garden(garden.id)
+    schedule_service.create_agent(garden.id, CONFIG.AGENT_TRIGGER)
+    return garden
 
 
 @router.put("/{garden_id}", response_model=GardenDTO)

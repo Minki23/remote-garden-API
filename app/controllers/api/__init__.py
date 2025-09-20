@@ -10,10 +10,11 @@ from . import (
     auth,
     esp_devices,
     admin,
-    user_devices
+    user_devices, agents
 )
 
 router = APIRouter()
+router.include_router(agents.router, prefix="/agents", tags=["Agents"])
 router.include_router(users.router, prefix="/users", tags=["Users"])
 router.include_router(gardens.router, prefix="/gardens", tags=["Gardens"])
 router.include_router(devices.router, prefix="/devices", tags=["Devices"])

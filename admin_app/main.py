@@ -10,6 +10,7 @@ from app.models.db import (
     ReadingDb,
     EspDeviceDb,
     UserDeviceDb,
+    AgentDb,
 )
 from app.core.config import CONFIG
 
@@ -30,7 +31,7 @@ class UserAdmin(ModelView, model=UserDb):
         UserDb.created_at,
         UserDb.updated_at,
         UserDb.refresh_expires_at,
-        UserDb.refresh_token_hash
+        UserDb.refresh_token_hash,
     ]
 
 
@@ -108,6 +109,19 @@ class UserDeviceAdmin(ModelView, model=UserDeviceDb):
     ]
 
 
+class AgentAdmin(ModelView, model=AgentDb):
+    column_list = [
+        AgentDb.id,
+        AgentDb.garden_id,
+        AgentDb.enabled,
+        AgentDb.refresh_token_hash,
+        AgentDb.refresh_expires_at,
+        AgentDb.created_at,
+        AgentDb.updated_at,
+    ]
+
+
+# Rejestracja widoków
 admin.add_view(UserAdmin)
 admin.add_view(GardenAdmin)
 admin.add_view(EspDeviceAdmin)
@@ -115,3 +129,4 @@ admin.add_view(DeviceAdmin)
 admin.add_view(NotificationAdmin)
 admin.add_view(ReadingAdmin)
 admin.add_view(UserDeviceAdmin)
+admin.add_view(AgentAdmin)

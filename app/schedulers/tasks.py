@@ -79,6 +79,22 @@ def run_scheduled_action(garden_id: int, action: ScheduleActionType):
     asyncio.run(inner())
 
 
+@celery_app.task(name="app.schedulers.tasks.trigger_agent")
+def run_trigger_agent(garden_id: int):
+    async def inner():
+        async with async_session_maker() as db:
+            try:
+                logger.info("Agent is triggered")
+                # TODO take schudelrs and send to agent with its token
+
+            except AppException as e:
+                logger.error(f"[Scheduled] AppException: {e.message}")
+            except Exception as e:
+                logger.exception(f"[Scheduled] Unexpected error: {e}")
+
+    asyncio.run(inner())
+
+
 @celery_app.task(name="app.schedulers.tasks.demo_log")
 def demo_log():
     logger.info("DEMO_LOG: Cyclic test task is running!")

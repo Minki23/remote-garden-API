@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import hashlib
+import hmac
 import secrets
 from jose import jwt
 from app.core.config import CONFIG
@@ -27,3 +28,7 @@ def decode_access_token(token: str) -> dict:
 
 def hash_refresh_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def verify_refresh_token(token: str, hashed: str) -> bool:
+    return hmac.compare_digest(hash_refresh_token(token), hashed)

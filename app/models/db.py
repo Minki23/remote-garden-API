@@ -81,6 +81,9 @@ class GardenDb(SuperDb):
     esp_devices: Mapped[list["EspDeviceDb"]] = relationship(
         "EspDeviceDb", back_populates="garden", cascade="all, delete-orphan"
     )
+    agents: Mapped[list["AgentDb"]] = relationship(
+        "AgentDb", back_populates="garden", cascade="all, delete-orphan"
+    )
 
 
 class DeviceDb(SuperDb):
@@ -152,3 +155,24 @@ class EspDeviceDb(SuperDb):
 
     status: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False)
+
+
+class AgentDb(SuperDb):
+    __tablename__ = "agents"
+
+    garden_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("gardens.id"), nullable=False, index=True
+    )
+    enabled: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False
+    )
+
+    refresh_token_hash: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True
+    )
+    refresh_expires_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime, nullable=True
+    )
+
+    garden: Mapped["GardenDb"] = relationship(
+        "GardenDb", back_populates="agents")
