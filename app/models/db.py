@@ -51,19 +51,19 @@ class UserDb(SuperDb):
 
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     google_sub: Mapped[Optional[str]] = mapped_column(
-        String, unique=True, nullable=True
-    )
-    auth: Mapped[str] = mapped_column(
-        String, unique=True, nullable=True
-    )
+        String, unique=True, nullable=True)
+    auth: Mapped[str] = mapped_column(String, unique=True, nullable=True)
     admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
+    refresh_token_hash: Mapped[Optional[str]
+                               ] = mapped_column(String, nullable=True)
+    refresh_expires_at: Mapped[Optional[datetime]
+                               ] = mapped_column(DateTime, nullable=True)
+
     gardens: Mapped[list["GardenDb"]] = relationship(
-        "GardenDb", back_populates="user"
-    )
+        "GardenDb", back_populates="user")
     notifications: Mapped[list["NotificationDb"]] = relationship(
-        "NotificationDb", back_populates="user"
-    )
+        "NotificationDb", back_populates="user")
     devices: Mapped[list["UserDeviceDb"]] = relationship(
         "UserDeviceDb", back_populates="user", cascade="all, delete-orphan")
 

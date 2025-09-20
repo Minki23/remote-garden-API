@@ -29,6 +29,8 @@ class UserAdmin(ModelView, model=UserDb):
         UserDb.admin,
         UserDb.created_at,
         UserDb.updated_at,
+        UserDb.refresh_expires_at,
+        UserDb.refresh_token_hash
     ]
 
 

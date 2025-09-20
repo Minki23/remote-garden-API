@@ -4,6 +4,8 @@ import random
 import uuid
 from datetime import datetime, timedelta
 
+from app.core.config import CONFIG
+from app.core.security.jwt import create_refresh_token, hash_refresh_token
 from app.models.enums import DeviceType, NotificationType
 from app.models.db import (
     UserDb, GardenDb, DeviceDb, ReadingDb,
@@ -79,17 +81,24 @@ async def clear_all_data(session):
     logger.info("✓ Database cleared successfully")
 
 
-async def create_users_and_devices(session, num_users=4):
-    """Create users with their mobile devices."""
+async def create_users_and_devices(session, num_users: int = 4):
+    """Create users with their mobile devices and initial refresh tokens."""
     users = []
     platforms = ["android", "ios"]
 
     for i in range(num_users):
+        # Generate refresh token
+        raw_refresh = create_refresh_token()
+        hashed_refresh = hash_refresh_token(raw_refresh)
+        expires_at = datetime.utcnow() + timedelta(days=CONFIG.REFRESH_TOKEN_EXPIRE_DAYS)
+
         user = UserDb(
             email=f"gardener{i+1}@greenhouse.com",
             google_sub=f"google_sub_{uuid.uuid4().hex[:16]}",
             auth=f"auth_{uuid.uuid4().hex}",
             admin=(i == 0),
+            refresh_token_hash=hashed_refresh,
+            refresh_expires_at=expires_at,
         )
         session.add(user)
         await session.flush()
@@ -104,7 +113,7 @@ async def create_users_and_devices(session, num_users=4):
                 user_id=user.id,
                 fcm_token=f"fcm_{uuid.uuid4().hex}",
                 platform=platforms[d % len(platforms)],
-                last_seen=datetime.utcnow() - timedelta(hours=random.randint(0, 48))
+                last_seen=datetime.utcnow() - timedelta(hours=random.randint(0, 48)),
             )
             session.add(user_device)
 
