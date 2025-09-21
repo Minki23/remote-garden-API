@@ -27,9 +27,10 @@ class ScheduleService:
             raise AppException(
                 f"Agent task {task_id} cannot be modified or deleted")
 
-        if is_agent and not created_by_ai:
-            raise AppException(
-                f"Agent cannot modify user-created task {task_id}")
+        # #Agent may do everything to achieve goal
+        # if is_agent and not created_by_ai:
+        #     raise AppException(
+        #         f"Agent cannot modify user-created task {task_id}")
 
         if not is_agent and created_by_ai:
             raise AppException(f"User cannot modify AI-created task {task_id}")

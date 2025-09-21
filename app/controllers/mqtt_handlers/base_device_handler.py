@@ -3,6 +3,7 @@ from app.core.mqtt.base_mqtt_callback_handler import BaseMqttCallbackHandler
 from app.core.db_context import async_session_maker
 from app.repos.devices import DeviceRepository
 from app.repos.users import UserRepository
+from app.repos.agents import AgentRepository
 from app.core.websocket.websocket_manager import websocket_manager
 
 logger = logging.getLogger(__name__)
@@ -46,5 +47,13 @@ class BaseDeviceHandler(BaseMqttCallbackHandler):
                 **extra_fields,
             }
             await websocket_manager.send_to_user(user.id, event_data)
+
             logger.info(f"WebSocket {websocket_event} sent to user {user.id}")
+
+            agent_repo = AgentRepository(session)
+            agent = await agent_repo.get_by_garden(garden_id)
+
+            if agent:
+                await websocket_manager.send_to_agent(agent.id, event_data)
+
             return device, user
