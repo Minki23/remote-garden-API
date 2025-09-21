@@ -52,9 +52,25 @@ pip-delete-this-directory.txt
 .ipynb_checkpoints/
 
 # Secrets (optional, if used)
-.env
-.env.*
+delivery_app/.env
+
 
 # MacOS / Windows
 .DS_Store
 Thumbs.db
+
+app/utils/prepare_esp/spiffs_data
+
+delivery_app/config/mqtt-server/private/
+delivery_app/config/mqtt-server/backend
+delivery_app/config/mqtt-server/mock-client
+delivery_app/config/mqtt-server/*.key
+delivery_app/config/mqtt-server/mosquitto/certs/*.key
+
+delivery_app/config/mqtt-server/certs/server.crt
+delivery_app/config/mqtt-server/mosquitto/certs/server.crt
+
+delivery_app/config/mqtt-server/mosquitto/data/
+delivery_app/config/mqtt-server/mosquitto/log/
+
+firebase-service-account.json

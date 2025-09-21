@@ -5,17 +5,9 @@ WORKDIR /admin_app
 RUN apt-get update && apt-get install -y \
     libpq-dev
 
-COPY ./admin_app/ ./
-COPY ./app /admin_app/app
+COPY . .
 
-RUN pip install \
-    fastapi \
-    uvicorn \
-    sqladmin \
-    sqlalchemy \
-    asyncpg \
-    jinja2 \
-    psycopg2-binary
+RUN pip install -r ./requirements.txt
 
 EXPOSE 8001
 
