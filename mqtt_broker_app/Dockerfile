@@ -10,7 +10,7 @@ COPY generate-backend-certs.sh /generate-backend-certs.sh
 COPY generate-mqtt-certs.sh /generate-mqtt-certs.sh
 
 RUN chmod +x /*.sh
-# CMD bash
+
 CMD /bin/bash -c "\
     /generate-mqtt-certs.sh && \
     CLIENT_NAME=mock-client /generate-backend-certs.sh && \

@@ -32,9 +32,9 @@ services:
     depends_on:
       - db
     volumes:
-      - ./mqtt-server/backend/backend.crt:/app/app/ca/backend.crt:ro
-      - ./mqtt-server/backend/backend.key:/app/app/ca/backend.key:ro
-      - ./mqtt-server/certs/ca.crt:/app/app/ca/ca.crt:ro
+      - ./mqtt-server/backend/backend.crt:/app/ca/backend.crt:ro
+      - ./mqtt-server/backend/backend.key:/app/ca/backend.key:ro
+      - ./mqtt-server/certs/ca.crt:/app/ca/ca.crt:ro
       - ./firebase-service-account.json:/app/firebase-service-account.json:ro
     networks:
       - garden-net
@@ -92,7 +92,7 @@ services:
     depends_on:
       - redis
     environment:
-      - PYTHONPATH=/app/app
+      - PYTHONPATH=/app
       - DB_CONNECTION_STRING=postgresql+asyncpg://user:password@db:5432/garden
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -109,7 +109,7 @@ services:
     depends_on:
       - redis
     environment:
-      - PYTHONPATH=/app/app
+      - PYTHONPATH=/app
       - DB_CONNECTION_STRING=postgresql+asyncpg://user:password@db:5432/garden
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -129,7 +129,7 @@ services:
     depends_on:
       - redis
     environment:
-      - PYTHONPATH=/app/app
+      - PYTHONPATH=/app
       - DB_CONNECTION_STRING=postgresql+asyncpg://user:password@db:5432/garden
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
