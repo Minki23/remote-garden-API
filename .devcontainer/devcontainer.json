@@ -3,6 +3,8 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
+  "workspaceFolder": "${localWorkspaceFolder}",
   "remoteUser": "vscode",
   "customizations": {
     "vscode": {
@@ -21,7 +23,8 @@
       }
     }
   },
-  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postCreateCommand": "bash .devcontainer/docker-setup.sh && bash .devcontainer/setup.sh",
+  "postStartCommand": "sudo chmod 666 /var/run/docker.sock",
   "forwardPorts": [
     8000
   ],
@@ -29,9 +32,8 @@
     "PIP_DISABLE_PIP_VERSION_CHECK": "1"
   },
   "runArgs": [
-    "--device=/dev/ttyUSB0",
     "--net=host",
-    "--privileged",
-    "--volume=/var/run/dbus:/var/run/dbus"
+    "--volume=/var/run/dbus:/var/run/dbus",
+    "--volume=/var/run/docker.sock:/var/run/docker.sock"
   ]
 }

@@ -1,9 +1,0 @@
-FROM python:3.11-slim
-
-WORKDIR /app
-
-RUN pip install paho-mqtt==1.6.1
-
-COPY app/utils/mock_mqtt/mock_device_publisher.py /app/mock_device_publisher.py
-
-CMD ["python", "/app/mock_device_publisher.py"]
