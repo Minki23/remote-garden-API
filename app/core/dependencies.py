@@ -33,7 +33,7 @@ from app.services import agents
 from app.services.agents import AgentService
 from app.services.schedules import ScheduleService
 from app.core.db_context import get_async_session
-from app.core.security.deps import SubjectType, _get_current_subject, get_current_user_id, get_current_admin_user, get_current_agent
+from app.core.security.deps import SubjectType, get_current_subject, get_current_user_id, get_current_admin_user, get_current_agent
 from fastapi import Security
 
 from app.services.user_devices import UserDeviceService
@@ -104,6 +104,13 @@ async def _get_user_garden_or_404(db, garden_id: int, user_id: int) -> GardenDb:
     return garden
 
 
+async def _get_agent_garden_or_404(db, garden_id: int, agent_id: int) -> GardenDb:
+    agent = await AgentRepository(db).get_by_id(agent_id)
+    if not agent.garden_id == garden_id:
+        raise AppException("Garden not found or access denied", 404)
+    return agent
+
+
 async def _get_user_esp_or_404(db, esp_id: int, user_id: int) -> EspDeviceDb:
     esp = await EspDeviceRepository(db).get_by_id_and_user(esp_id, user_id)
     if not esp:
@@ -113,10 +120,14 @@ async def _get_user_esp_or_404(db, esp_id: int, user_id: int) -> EspDeviceDb:
 
 async def _get_esp_device_for_garden(
     garden_id: int = Path(...),
-    user_id: int = Depends(get_current_user_id),
+    subject: tuple[int, SubjectType] = Depends(get_current_subject),
     db=Depends(get_async_session),
 ) -> List[EspDeviceDTO]:
-    await _get_user_garden_or_404(db, garden_id, user_id)
+    idd, subject_type = subject
+    if subject_type == SubjectType.USER:
+        await _get_user_garden_or_404(db, garden_id, idd)
+    else:
+        await _get_agent_garden_or_404(db, garden_id, idd)
 
     esp_repo = EspDeviceRepository(db)
     esp_devices = await esp_repo.get_by_garden_id(garden_id)
@@ -256,7 +267,7 @@ UserScheduleDep = Annotated[str, Depends(_get_user_schedule)]
 AdminUserDep = Annotated[UserDb, Depends(get_current_admin_user)]
 AgentDep = Annotated[AgentDb, Depends(get_current_agent)]
 CurrentSubjectDep = Annotated[tuple[int,
-                                    SubjectType], Depends(_get_current_subject)]
+                                    SubjectType], Depends(get_current_subject)]
 UserEspAndGardenDep = Annotated[
     tuple[EspDeviceDTO, GardenDTO], Depends(_get_user_esp_and_garden)
 ]

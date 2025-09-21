@@ -186,6 +186,20 @@ services:
       - garden-net
     profiles: [ "mock" ]
 
+  agent:
+    build:
+      context: .
+      dockerfile: agent_app/Dockerfile
+    container_name: remote-garden-agent
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - PYTHONPATH=/app/agent_app
+    networks:
+      - garden-net
+    profiles: [ "prod" ]
+
 volumes:
   postgres_data:
 

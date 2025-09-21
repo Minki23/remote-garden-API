@@ -7,7 +7,7 @@ import asyncio
 import json
 import logging
 
-from app.core.security.deps import _get_current_subject, SubjectType
+from app.core.security.deps import get_current_subject, SubjectType
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class WebSocketManager:
         try:
             credentials = HTTPAuthorizationCredentials(
                 scheme=scheme, credentials=token)
-            subject_id, subject_type = await _get_current_subject(credentials)
+            subject_id, subject_type = await get_current_subject(credentials)
         except Exception:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
             logger.warning("Close connection due to authentication issue")

@@ -4,6 +4,7 @@ import hmac
 import secrets
 from jose import jwt
 from app.core.config import CONFIG
+from jose import JWTError
 
 
 def create_access_token(data: dict) -> str:
@@ -13,13 +14,25 @@ def create_access_token(data: dict) -> str:
     return jwt.encode(to_encode, CONFIG.SECRET_KEY, algorithm=CONFIG.ALGORITHM)
 
 
+def create_access_token_for_user(user_id: int) -> str:
+    return create_access_token({
+        "sub_id": user_id,
+        "sub_type": "user"
+    })
+
+
+def create_access_token_for_agent(agent_id: int) -> str:
+    return create_access_token({
+        "sub_id": agent_id,
+        "sub_type": "agent"
+    })
+
+
 def create_refresh_token() -> str:
     return secrets.token_urlsafe(64)
 
 
 def decode_access_token(token: str) -> dict:
-    from jose import JWTError
-
     try:
         return jwt.decode(token, CONFIG.SECRET_KEY, algorithms=[CONFIG.ALGORITHM])
     except JWTError:
@@ -31,4 +44,6 @@ def hash_refresh_token(token: str) -> str:
 
 
 def verify_refresh_token(token: str, hashed: str) -> bool:
-    return hmac.compare_digest(hash_refresh_token(token), hashed)
+    # return hmac.compare_digest(hash_refresh_token(token), hashed)
+    # @TODO remove
+    return hmac.compare_digest(token, hashed)

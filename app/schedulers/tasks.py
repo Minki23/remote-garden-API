@@ -1,9 +1,11 @@
+from app.clients.agent_client import AgentClient
 from app.core.celery.celery_app import celery_app
 from app.models.dtos.notifications import NotificationCreateDTO
 from app.models.enums import NotificationType, ScheduleActionType
 import logging
 import asyncio
 from app.core.db_context import async_session_maker
+from app.repos.agents import AgentRepository
 from app.repos.devices import DeviceRepository
 from app.repos.esp_devices import EspDeviceRepository
 from app.repos.users import UserRepository
@@ -84,8 +86,14 @@ def run_trigger_agent(garden_id: int):
     async def inner():
         async with async_session_maker() as db:
             try:
+                client = AgentClient()
                 logger.info("Agent is triggered")
-                # TODO take schudelrs and send to agent with its token
+
+                repo = AgentRepository(db)
+                agent = await repo.get_by_garden(garden_id)
+
+                if agent:
+                    await client.trigger(agent.id, garden_id)
 
             except AppException as e:
                 logger.error(f"[Scheduled] AppException: {e.message}")

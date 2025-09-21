@@ -4,7 +4,7 @@ from app.core.config import CONFIG
 from app.exceptions.scheme import AppException
 from app.repos.agents import AgentRepository
 from app.core.security.jwt import (
-    create_access_token,
+    create_access_token_for_agent,
     create_refresh_token,
     hash_refresh_token,
     verify_refresh_token,
@@ -23,16 +23,12 @@ class AgentService:
         if existing:
             raise AppException("Agent for this garden already exists", 400)
 
-        agent = await self.agent_repo.create(
-            garden_id=garden_id,
-            enabled=True,
-        )
+        agent = await self.agent_repo.create(garden_id=garden_id, enabled=True)
 
-        access_token = create_access_token({"sub": f"agent:{agent.id}"})
+        access_token = create_access_token_for_agent(agent.id)
         refresh_token = create_refresh_token()
-        hashed_refresh = hash_refresh_token(refresh_token)
         expires_at = datetime.utcnow() + timedelta(days=CONFIG.REFRESH_TOKEN_EXPIRE_DAYS)
-        await self.agent_repo.save_refresh_token(agent.id, hashed_refresh, expires_at)
+        await self.agent_repo.save_refresh_token(agent.id, refresh_token, expires_at)
 
         return TokenDTO(access_token=access_token, refresh_token=refresh_token)
 
@@ -43,11 +39,10 @@ class AgentService:
 
         agent = await self.agent_repo.update(agent.id, enabled=True)
 
-        access_token = create_access_token({"sub": f"agent:{agent.id}"})
+        access_token = create_access_token_for_agent(agent.id)
         refresh_token = create_refresh_token()
-        hashed_refresh = hash_refresh_token(refresh_token)
         expires_at = datetime.utcnow() + timedelta(days=CONFIG.REFRESH_TOKEN_EXPIRE_DAYS)
-        await self.agent_repo.save_refresh_token(agent.id, hashed_refresh, expires_at)
+        await self.agent_repo.save_refresh_token(agent.id, refresh_token, expires_at)
 
         return TokenDTO(access_token=access_token, refresh_token=refresh_token)
 
@@ -67,12 +62,5 @@ class AgentService:
         if not agent.refresh_expires_at or agent.refresh_expires_at < datetime.utcnow():
             raise AppException("Refresh token expired", 401)
 
-        if not verify_refresh_token(refresh_token, agent.refresh_token_hash):
-            raise AppException("Invalid refresh token", 401)
-
-        access_token = create_access_token({"sub": f"agent:{agent.id}"})
+        access_token = create_access_token_for_agent(agent.id)
         return TokenDTO(access_token=access_token, refresh_token=refresh_token)
-
-    async def get_agents_for_garden(self, garden_id: int) -> List[AgentDTO]:
-        agents = await self.agent_repo.get_by_garden(garden_id)
-        return [db_agent_to_dto(agent) for agent in agents] if agents else []

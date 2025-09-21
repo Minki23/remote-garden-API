@@ -5,7 +5,7 @@ from app.core.security.jwt import decode_access_token
 from app.exceptions.scheme import AppException
 import logging
 
-from app.models.db import UserDb, AgentDb, GardenDb
+from app.models.db import UserDb, AgentDb
 from app.repos.users import UserRepository
 from sqlalchemy.future import select
 from enum import Enum
@@ -21,7 +21,7 @@ class SubjectType(str, Enum):
     AGENT = "agent"
 
 
-async def _get_current_subject(
+async def get_current_subject(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> tuple[int, SubjectType]:
     logger.info("Validating user credentials")
@@ -33,13 +33,11 @@ async def _get_current_subject(
     token = credentials.credentials
     payload = decode_access_token(token)
 
-    sub_id = payload.get("sub")
-    sub_type = payload.get("sub_type", "user")  # domyślnie user
+    sub_id = payload.get("sub_id")
+    sub_type = payload.get("sub_type")
 
     if sub_id is None:
-        if token == "admin":
-            return (1, SubjectType.USER)
-        raise AppException(status_code=401, message="Invalid token")
+        raise AppException(status_code=401, message="Invalid subject id")
 
     if sub_type not in ("user", "agent"):
         raise AppException(status_code=401, message="Invalid subject type")
@@ -48,7 +46,7 @@ async def _get_current_subject(
 
 
 async def _get_current_user_id(
-    subject=Depends(_get_current_subject),
+    subject=Depends(get_current_subject),
 ) -> int:
     sub_id, sub_type = subject
     if sub_type != SubjectType.USER:
@@ -76,7 +74,7 @@ get_current_admin_user = _get_current_admin_user
 
 
 async def _get_current_agent(
-    subject=Depends(_get_current_subject),
+    subject=Depends(get_current_subject),
     db=Depends(get_async_session),
 ) -> AgentDb:
     sub_id, sub_type = subject

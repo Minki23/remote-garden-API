@@ -4,7 +4,7 @@ from app.core.config import CONFIG
 from app.exceptions.scheme import AppException
 from app.repos.users import UserRepository
 from app.core.security.google import verify_google_token
-from app.core.security.jwt import create_access_token, create_refresh_token
+from app.core.security.jwt import create_access_token_for_user, create_refresh_token
 from app.models.dtos.auth import TokenDTO
 
 
@@ -25,10 +25,7 @@ class AuthService:
                 auth=secrets.token_urlsafe(32)
             )
 
-        # ACCESS
-        access_token = create_access_token({"sub": str(user.id)})
-
-        # REFRESH
+        access_token = create_access_token_for_user(user.id)
         refresh_token = create_refresh_token()
         expires_at = datetime.utcnow() + timedelta(days=CONFIG.REFRESH_TOKEN_EXPIRE_DAYS)
         await self.repo.save_refresh_token(user.id, refresh_token, expires_at)
@@ -43,5 +40,5 @@ class AuthService:
         if not user.refresh_expires_at or user.refresh_expires_at < datetime.utcnow():
             raise AppException("Refresh token expired")
 
-        access_token = create_access_token({"sub": str(user.id)})
+        access_token = create_access_token_for_user(user.id)
         return TokenDTO(access_token=access_token, refresh_token=refresh_token)

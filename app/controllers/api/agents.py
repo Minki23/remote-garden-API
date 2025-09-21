@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.core.config import CONFIG
-from app.models.dtos.auth import TokenDTO
+from app.models.dtos.auth import RefreshTokenDTO, TokenDTO
 from app.core.dependencies import AgentServiceDep, GardenDep, ScheduleServiceDep
 
 router = APIRouter()
@@ -32,10 +32,10 @@ async def disable_agent_for_garden(
 
 @router.post("/refresh", response_model=TokenDTO)
 async def refresh_agent(
-    refresh_token: str,
+    dto: RefreshTokenDTO,
     agent_service: AgentServiceDep,
 ):
-    return await agent_service.refresh(refresh_token)
+    return await agent_service.refresh(dto.refresh_token)
 
 
 @router.post("/create/{garden_id}", response_model=TokenDTO)
