@@ -1,76 +1,61 @@
+from fastapi import APIRouter
+from app.core.dependencies import (
+    DeviceServiceDep,
+    EspDeviceForGardenDep,
+    SpecificEspDeviceForGardenDep,
+)
 from app.models.enums import ControlActionType, DeviceType
-from fastapi import APIRouter, Body
-from app.core.dependencies import DeviceServiceDep, GardenDep
-from app.models.dtos.devices import DeviceCreateDTO, DeviceDTO
-from app.models.dtos.status import StatusDTO
-from app.core.dependencies import StatusServiceDep
+from app.models.dtos.devices import DeviceDTO
 
 router = APIRouter()
 
 
-@router.get("/{garden_id}", response_model=list[DeviceDTO])
-async def get_by_garden(service: DeviceServiceDep, garden: GardenDep):
-    return await service.get_all_for_garden(garden.id)
+@router.get("/garden/{garden_id}", response_model=list[DeviceDTO])
+async def get_by_garden(service: DeviceServiceDep, esps: EspDeviceForGardenDep):
+    return await service.get_all_for_esps(esps)
 
 
-@router.get("/{garden_id}/status", response_model=StatusDTO)
-async def get_status(service: StatusServiceDep, garden: GardenDep):
-    return await service.get_status(DeviceType.ESP, garden.id)
+CONTROL_MAP = {
+    "water/on": (DeviceType.WATERER, ControlActionType.WATER_ON),
+    "water/off": (DeviceType.WATERER, ControlActionType.WATER_OFF),
+    "atomizer/on": (DeviceType.ATOMIZER, ControlActionType.ATOMIZE_ON),
+    "atomizer/off": (DeviceType.ATOMIZER, ControlActionType.ATOMIZE_OFF),
+    "fan/on": (DeviceType.FANNER, ControlActionType.FAN_ON),
+    "fan/off": (DeviceType.FANNER, ControlActionType.FAN_OFF),
+    "heating-mat/on": (DeviceType.HEATER, ControlActionType.HEATING_MAT_ON),
+    "heating-mat/off": (DeviceType.HEATER, ControlActionType.HEATING_MAT_OFF),
+}
 
 
-# Control device endpoints
+def make_all_handler(device_type: DeviceType, action_type: ControlActionType):
+    async def control_all_action(
+        service: DeviceServiceDep,
+        esps: EspDeviceForGardenDep,
+    ):
+        return await service.control_device(esps, device_type, action_type)
+
+    return control_all_action
 
 
-@router.post("/{garden_id}/light/on", response_model=bool)
-async def turn_on_light(service: DeviceServiceDep, garden: GardenDep):
-    return await service.control_device(garden.id, DeviceType.LIGHT, ControlActionType.TURN_ON)
+def make_one_handler(device_type: DeviceType, action_type: ControlActionType):
+    async def control_one_action(
+        service: DeviceServiceDep,
+        esp: SpecificEspDeviceForGardenDep,
+    ):
+        return await service.control_device([esp], device_type, action_type)
+
+    return control_one_action
 
 
-@router.post("/{garden_id}/light/off", response_model=bool)
-async def turn_off_light(service: DeviceServiceDep, garden: GardenDep):
-    return await service.control_device(garden.id, DeviceType.LIGHT, ControlActionType.TURN_OFF)
+for path, (device_type, action_type) in CONTROL_MAP.items():
+    router.post(
+        f"/garden/{{garden_id}}/{path}",
+        response_model=bool,
+        name=f"{path.replace('/', '_')}_all",
+    )(make_all_handler(device_type, action_type))
 
-
-@router.post("/{garden_id}/water/start", response_model=bool)
-async def start_watering(service: DeviceServiceDep, garden: GardenDep):
-    return await service.control_device(
-        garden.id, DeviceType.WATER_PUMP, ControlActionType.START_WATERING
-    )
-
-
-@router.post("/{garden_id}/roof/open", response_model=bool)
-async def open_roof(service: DeviceServiceDep, garden: GardenDep):
-    return await service.control_device(garden.id, DeviceType.ROOF, ControlActionType.OPEN_ROOF)
-
-
-@router.post("/{garden_id}/roof/close", response_model=bool)
-async def close_roof(service: DeviceServiceDep, garden: GardenDep):
-    return await service.control_device(garden.id, DeviceType.ROOF, ControlActionType.CLOSE_ROOF)
-
-
-@router.post("/{garden_id}/esp/reset", response_model=bool)
-async def reset_esp(service: DeviceServiceDep, garden: GardenDep):
-    return await service.control_device(garden.id, DeviceType.ESP, ControlActionType.RESET_ESP)
-
-
-# @router.post("/{garden_id}/esp/pair", response_model=bool)
-# async def pair_esp(service: DeviceServiceDep, garden: GardenDep):
-#     return await service.control_device(garden.id, DeviceType.ESP, ControlActionType.PAIR_ESP)
-
-
-@router.post("/{garden_id}/heater/increase", response_model=bool)
-async def increase_temperature(
-    service: DeviceServiceDep, garden: GardenDep, amount: int = Body(..., embed=True)
-):
-    return await service.control_device(
-        garden.id, DeviceType.HEATER, ControlActionType.INCREASE_TEMPERATURE, amount=amount
-    )
-
-
-@router.post("/{garden_id}/heater/decrease", response_model=bool)
-async def decrease_temperature(
-    service: DeviceServiceDep, garden: GardenDep, amount: int = Body(..., embed=True)
-):
-    return await service.control_device(
-        garden.id, DeviceType.HEATER, ControlActionType.DECREASE_TEMPERATURE, amount=amount
-    )
+    router.post(
+        f"/esp/{{esp_id}}/{path}",
+        response_model=bool,
+        name=f"{path.replace('/', '_')}_one",
+    )(make_one_handler(device_type, action_type))

@@ -4,6 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 # @TODO check why not working
 # function for enabling CORS on web server
 def add(app: FastAPI):

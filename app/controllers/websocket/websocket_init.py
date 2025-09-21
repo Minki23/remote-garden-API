@@ -1,11 +1,11 @@
-from fastapi import APIRouter, WebSocket, Depends, WebSocketDisconnect
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.core.websocket.websocket_manager import websocket_manager
-from app.core.dependencies import CurrentUserDep
-
 import logging
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 @router.websocket("/wsinit")
 async def websocket_endpoint(websocket: WebSocket):

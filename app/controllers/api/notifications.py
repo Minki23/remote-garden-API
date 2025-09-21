@@ -1,13 +1,12 @@
 from fastapi import APIRouter
-from app.core.dependencies import CurrentUserDep, NotificationServiceDep, UserNotificationDep
-from app.models.dtos.notifications import NotificationCreateDTO, NotificationDTO
+from app.core.dependencies import (
+    CurrentUserDep,
+    NotificationServiceDep,
+    UserNotificationDep,
+)
+from app.models.dtos.notifications import NotificationDTO
 
 router = APIRouter()
-
-
-# @router.post("/", response_model=NotificationDTO)
-# async def create_notification(dto: NotificationCreateDTO, service: NotificationServiceDep):
-#     return await service.create(dto)
 
 
 @router.get("/", response_model=list[NotificationDTO])
@@ -34,5 +33,7 @@ async def get_reminders(user_id: CurrentUserDep, service: NotificationServiceDep
 
 
 @router.get("/system/", response_model=list[NotificationDTO])
-async def get_system_notifications(user_id: CurrentUserDep, service: NotificationServiceDep):
+async def get_system_notifications(
+    user_id: CurrentUserDep, service: NotificationServiceDep
+):
     return await service.get_by_user_and_type(user_id, "system")

@@ -39,7 +39,7 @@ class BaseMqttCallbackHandler:
 
     async def __call__(self, topic: str, payload: dict):
         raise NotImplementedError("Subclasses must implement __call__")
-    
+
     async def last_message_of_topic(self, **kwargs) -> str | None:
         from app.core.mqtt.mqtt_subscriber import MqttTopicSubscriber
 
@@ -55,5 +55,7 @@ class BaseMqttCallbackHandler:
         pattern = re.sub(r"\\\{([^{}]+)\\\}", r"(?P<\1>[^/]+)", pattern)
         match = re.match(pattern, topic)
         if not match:
-            raise AppException(f"Topic '{topic}' does not match template '{self.topic_template}'")
+            raise AppException(
+                f"Topic '{topic}' does not match template '{self.topic_template}'"
+            )
         return match.groupdict().get(key)

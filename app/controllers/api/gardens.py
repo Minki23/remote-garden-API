@@ -1,11 +1,11 @@
 from fastapi import APIRouter
-from app.core.dependencies import GardenServiceDep, CurrentUserDep, GardenDep
+from app.core.config import CONFIG
+from app.core.dependencies import GardenServiceDep, CurrentUserDep, GardenDep, AgentServiceDep, ScheduleServiceDep
 from app.models.dtos.gardens import (
     GardenCreateDTO,
     GardenDTO,
     GardenPreferencesUpdateDTO,
     GardenUpdateDTO,
-    GardenConfigureDTO,
 )
 
 router = APIRouter()
@@ -16,8 +16,13 @@ async def create_garden(
     dto: GardenCreateDTO,
     service: GardenServiceDep,
     user_id: CurrentUserDep,
+    agent_service: AgentServiceDep,
+    schedule_service: ScheduleServiceDep
 ):
-    return await service.create_garden(dto, user_id)
+    garden = await service.create_garden(dto, user_id)
+    await agent_service.create_agent_for_garden(garden.id)
+    schedule_service.create_agent(garden.id, CONFIG.AGENT_TRIGGER)
+    return garden
 
 
 @router.put("/{garden_id}", response_model=GardenDTO)
@@ -34,7 +39,7 @@ async def delete_garden(
     service: GardenServiceDep,
     garden: GardenDep,
 ):
-    await service.delete_garden(garden.id, garden.user_id)
+    await service.delete_garden(garden.id)
 
 
 @router.get("/", response_model=list[GardenDTO])
@@ -45,13 +50,11 @@ async def get_my_gardens(
     return await service.get_gardens_by_user(user_id)
 
 
-@router.post("/{garden_id}/configure", response_model=bool)
-async def configure_garden(
-    config: GardenConfigureDTO,
-    service: GardenServiceDep,
+@router.get("/{garden_id}", response_model=GardenDTO)
+async def get_garden_by_id(
     garden: GardenDep,
-) -> bool:
-    return await service.configure_garden(garden.id, config)
+):
+    return garden
 
 
 @router.patch("/{garden_id}/preferences", response_model=GardenDTO)

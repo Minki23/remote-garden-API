@@ -8,8 +8,11 @@ from app.core.mqtt.mqtt_subscriber import MqttTopicSubscriber
 
 logger = logging.getLogger(__name__)
 
+
 @asynccontextmanager
-async def lifespan(app: FastAPI, topic_subscribe_callback: Callable[[], Awaitable[None]]):
+async def lifespan(
+    app: FastAPI, topic_subscribe_callback: Callable[[], Awaitable[None]]
+):
     logger.info("Starting MQTT subscriber...")
     subscriber = MqttTopicSubscriber()
     task = asyncio.create_task(subscriber.start())
@@ -17,7 +20,7 @@ async def lifespan(app: FastAPI, topic_subscribe_callback: Callable[[], Awaitabl
     await asyncio.sleep(1)
 
     await topic_subscribe_callback()
-    
+
     try:
         yield
     finally:

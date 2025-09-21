@@ -8,4 +8,6 @@ def db_to_user_dto(user: db.UserDb) -> UserDTO:
         email=user.email,
         updated_at=user.updated_at,
         created_at=user.created_at,
+        auth=user.auth,
+        admin=user.admin
     )

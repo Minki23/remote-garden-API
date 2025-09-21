@@ -8,14 +8,8 @@ RUN apt-get update && apt-get install -y \
 COPY ./admin_app/ ./
 COPY ./app /admin_app/app
 
-RUN pip install \
-    fastapi \
-    uvicorn \
-    sqladmin \
-    sqlalchemy \
-    asyncpg \
-    jinja2 \
-    psycopg2-binary
+
+RUN pip install -r ./requirements.txt
 
 EXPOSE 8001
 

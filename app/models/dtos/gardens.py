@@ -28,8 +28,3 @@ class GardenDTO(BaseModel):
     send_notifications: bool
     enable_automation: bool
     use_fahrenheit: bool
-
-
-class GardenConfigureDTO(BaseModel):
-    ssid: str
-    password: str

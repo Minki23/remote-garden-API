@@ -2,37 +2,36 @@ from fastapi import APIRouter, Query
 from typing import Optional
 from datetime import datetime
 
-from app.core.dependencies import CurrentUserDep, ReadingServiceDep, GardenDep, UserDeviceDep
+from app.core.dependencies import (
+    ReadingServiceDep,
+    GardenDep,
+)
 from app.models.dtos.readings import ReadingDTO
 from app.models.enums import DeviceType
 
 router = APIRouter()
 
 
-@router.get("/device/{device_id}", response_model=list[ReadingDTO])
-async def get_by_device(
-    device: UserDeviceDep,
-    service: ReadingServiceDep,
-):
-    return await service.get_by_device(device.id)
-
-
-@router.get("/garden/{garden_id}/filter", response_model=list[ReadingDTO])
-async def get_by_filters_for_garden(
+@router.get("/garden/{garden_id}/device-type/{type}", response_model=list[ReadingDTO])
+async def get_by_filters_for_garden_paginated(
     garden: GardenDep,
     type: DeviceType,
     service: ReadingServiceDep,
     start_time: Optional[datetime] = Query(None),
     end_time: Optional[datetime] = Query(None),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(100, gt=0),
 ):
     start_time = start_time or datetime.min
     end_time = end_time or datetime.utcnow()
 
-    return await service.get_by_garden_filters(
+    return await service.get_by_garden_filters_paginated(
         garden_id=garden.id,
         type=type,
         start_time=start_time,
         end_time=end_time,
+        offset=offset,
+        limit=limit,
     )
 
 
@@ -46,4 +45,3 @@ async def get_last_by_device_type(
         garden_id=garden.id,
         type=type,
     )
-

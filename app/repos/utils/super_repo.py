@@ -14,7 +14,9 @@ class SuperRepo(Generic[T]):
         self.model = model
 
     async def get_by_id(self, obj_id: UUID) -> Optional[T]:
-        result = await self.db.execute(select(self.model).where(self.model.id == obj_id))
+        result = await self.db.execute(
+            select(self.model).where(self.model.id == obj_id)
+        )
         return result.scalar_one_or_none()
 
     async def get_all(self) -> List[T]:
@@ -24,6 +26,13 @@ class SuperRepo(Generic[T]):
     async def create(self, **kwargs) -> T:
         obj = self.model(**kwargs)
         self.db.add(obj)
+
+        if hasattr(obj, "updated_at"):
+            setattr(obj, "updated_at", datetime.utcnow())
+
+        if hasattr(obj, "created_at"):
+            setattr(obj, "created_at", datetime.utcnow())
+
         await self.db.commit()
         await self.db.refresh(obj)
         return obj

@@ -58,3 +58,19 @@ pip-delete-this-directory.txt
 # MacOS / Windows
 .DS_Store
 Thumbs.db
+
+app/utils/prepare_esp/spiffs_data
+
+mqtt-server/private/
+mqtt-server/backend
+mqtt-server/mock-client
+mqtt-server/*.key
+mqtt-server/mosquitto/certs/*.key
+
+mqtt-server/certs/server.crt
+mqtt-server/mosquitto/certs/server.crt
+
+mqtt-server/mosquitto/data/
+mqtt-server/mosquitto/log/
+
+firebase-service-account.json
