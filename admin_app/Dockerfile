@@ -5,9 +5,7 @@ WORKDIR /admin_app
 RUN apt-get update && apt-get install -y \
     libpq-dev
 
-COPY ./admin_app/ ./
-COPY ./app /admin_app/app
-
+COPY . .
 
 RUN pip install -r ./requirements.txt
 

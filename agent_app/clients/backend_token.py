@@ -1,5 +1,5 @@
 import httpx
-from app.exceptions.scheme import AppException
+from exceptions.scheme import AppException
 
 
 class BackendTokenClient:
