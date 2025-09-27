@@ -3,6 +3,9 @@ from common_db.db import EspDeviceDb
 
 
 def db_esp_to_dto(db_obj: EspDeviceDb) -> EspDeviceDTO:
+    """
+    Convert an EspDeviceDb ORM object to an EspDeviceDTO.
+    """
     return EspDeviceDTO(
         id=db_obj.id,
         mac=db_obj.mac,
@@ -12,5 +15,5 @@ def db_esp_to_dto(db_obj: EspDeviceDb) -> EspDeviceDTO:
         created_at=db_obj.created_at,
         updated_at=db_obj.updated_at,
         garden_id=db_obj.garden_id,
-        status=db_obj.status
+        status=db_obj.status,
     )

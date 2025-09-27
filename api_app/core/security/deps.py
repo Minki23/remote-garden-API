@@ -17,6 +17,9 @@ bearer_scheme = HTTPBearer(
 
 
 class SubjectType(str, Enum):
+    """
+    Enumeration of possible subject types stored in JWT tokens.
+    """
     USER = "user"
     AGENT = "agent"
 
@@ -24,6 +27,19 @@ class SubjectType(str, Enum):
 async def get_current_subject(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> tuple[int, SubjectType]:
+    """
+    Extract and validate subject from JWT credentials.
+
+    Parameters
+    ----------
+    credentials : HTTPAuthorizationCredentials
+        Bearer token provided in request.
+
+    Returns
+    -------
+    tuple[int, SubjectType]
+        A tuple containing the subject ID and its type.
+    """
     logger.info("Validating user credentials")
     logger.info(f"Received credentials: {credentials}")
 
@@ -48,6 +64,11 @@ async def get_current_subject(
 async def _get_current_user_id(
     subject=Depends(get_current_subject),
 ) -> int:
+    """
+    Validate that the subject is a user and return its ID.
+
+    Raises 403 if subject is not a user.
+    """
     sub_id, sub_type = subject
     if sub_type != SubjectType.USER:
         raise AppException(status_code=403, message="User access required")
@@ -61,6 +82,11 @@ async def _get_current_admin_user(
     user_id: int = Depends(get_current_user_id),
     db=Depends(get_async_session),
 ) -> UserDb:
+    """
+    Validate that the current user is an admin.
+
+    Raises 403 if the user is not an admin.
+    """
     repo = UserRepository(db)
     user = await repo.get_by_id(user_id)
 
@@ -77,6 +103,11 @@ async def _get_current_agent(
     subject=Depends(get_current_subject),
     db=Depends(get_async_session),
 ) -> AgentDb:
+    """
+    Validate that the subject is an agent and return the agent instance.
+
+    Raises 401 if the agent is not found.
+    """
     sub_id, sub_type = subject
     if sub_type != SubjectType.AGENT:
         raise AppException(status_code=403, message="Agent access required")

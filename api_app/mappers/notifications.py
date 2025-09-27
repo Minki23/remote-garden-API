@@ -3,6 +3,9 @@ from models.dtos.notifications import NotificationDTO
 
 
 def db_to_dto(notification: NotificationDb) -> NotificationDTO:
+    """
+    Convert a NotificationDb ORM object to a NotificationDTO.
+    """
     return NotificationDTO(
         id=notification.id,
         user_id=notification.user_id,

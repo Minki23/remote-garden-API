@@ -3,6 +3,9 @@ from models.dtos.agents import AgentDTO
 
 
 def db_to_dto(agent: AgentDb) -> AgentDTO:
+    """
+    Convert an AgentDb ORM object to an AgentDTO.
+    """
     return AgentDTO(
         id=agent.id,
         garden_id=agent.garden_id,

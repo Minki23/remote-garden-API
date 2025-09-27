@@ -13,10 +13,29 @@ logger = logging.getLogger(__name__)
 async def lifespan(
     app: FastAPI, topic_subscribe_callback: Callable[[], Awaitable[None]]
 ):
+    """
+    Manage application lifespan with MQTT subscriber.
+
+    Starts an MQTT subscriber in the background when the FastAPI app starts,
+    subscribes to topics, and ensures proper cleanup when the app shuts down.
+
+    Parameters
+    ----------
+    app : FastAPI
+        The FastAPI application instance.
+    topic_subscribe_callback : Callable[[], Awaitable[None]]
+        A coroutine to register topic handlers after subscriber startup.
+
+    Yields
+    ------
+    None
+        Allows FastAPI lifespan integration to continue execution.
+    """
     logger.info("Starting MQTT subscriber...")
     subscriber = MqttTopicSubscriber()
     task = asyncio.create_task(subscriber.start())
 
+    # Short delay to ensure the subscriber is running before subscribing
     await asyncio.sleep(1)
 
     await topic_subscribe_callback()

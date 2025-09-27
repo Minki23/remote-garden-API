@@ -3,6 +3,9 @@ from models.dtos import gardens as dto
 
 
 def db_to_garden_dto(garden: db.GardenDb) -> dto.GardenDTO:
+    """
+    Convert a GardenDb ORM object to a GardenDTO.
+    """
     return dto.GardenDTO(
         id=garden.id,
         user_id=garden.user_id,

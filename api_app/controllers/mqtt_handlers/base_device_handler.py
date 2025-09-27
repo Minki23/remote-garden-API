@@ -35,7 +35,7 @@ class BaseDeviceHandler(BaseMqttCallbackHandler):
         payload: dict,
         websocket_event: str,
         extra_fields: dict,
-    ):
+    ) -> tuple:
         """
         Process a device event by resolving the device and its owner,
         sending notifications over WebSocket, and optionally notifying

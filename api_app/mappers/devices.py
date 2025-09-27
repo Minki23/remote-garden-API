@@ -3,6 +3,9 @@ from models.dtos.devices import DeviceDTO
 
 
 def db_to_dto(device: DeviceDb) -> DeviceDTO:
+    """
+    Convert a DeviceDb ORM object to a DeviceDTO.
+    """
     return DeviceDTO(
         id=device.id,
         type=device.type,

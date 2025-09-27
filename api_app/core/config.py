@@ -22,6 +22,9 @@ class Config:
     BASE_AGENT_URL: str = getenv("BASE_AGENT_URL")
     BASE_CSR_URL: str = getenv("BASE_CSR_URL")
     RTSP_URL: str = getenv("RTSP_URL")
+    REDIS_HOST: str = getenv("REDIS_HOST")
+    MQTT_BROKER_HOST: str = getenv("MQTT_BROKER_HOST")
+    MQTT_BROKER_PORT: str = getenv("MQTT_BROKER_PORT")
     USE_MOCK_CAMERA: bool = False
 
     @staticmethod

@@ -8,4 +8,5 @@ class AppException(Exception):
 
 
 class GoogleAuthException(AppException):
+    """Exception raised for Google authentication errors."""
     pass

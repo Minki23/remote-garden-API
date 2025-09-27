@@ -4,9 +4,7 @@ from core.db_context import async_session_maker
 from core.mqtt.base_mqtt_callback_handler import BaseMqttCallbackHandler
 from models.dtos.notifications import NotificationCreateDTO
 from repos.esp_devices import EspDeviceRepository
-from repos.notifications import NotificationRepository
 from repos.users import UserRepository
-from services.notifications import NotificationService
 from common_db.enums import NotificationType
 
 logger = logging.getLogger(__name__)

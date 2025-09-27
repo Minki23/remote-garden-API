@@ -7,6 +7,19 @@ logger = logging.getLogger(__name__)
 
 
 def custom_openapi(app: FastAPI) -> dict:
+    """
+    Generate and customize the OpenAPI schema for the FastAPI app.
+
+    Parameters
+    ----------
+    app : FastAPI
+        The FastAPI application instance for which the schema is generated.
+
+    Returns
+    -------
+    dict
+        The customized OpenAPI schema as a dictionary.
+    """
     if app.openapi_schema:
         logger.info("Returning cached OpenAPI schema")
         return app.openapi_schema
