@@ -4,9 +4,13 @@ from fastapi.responses import HTMLResponse
 
 from views import main_view
 
-router = APIRouter(prefix="", tags=["Pages"], default_response_class=HTMLResponse)
+router = APIRouter(prefix="", tags=["Pages"],
+                   default_response_class=HTMLResponse)
 
 
 @router.get("/")
 def main(req: Request):
+    """
+    Render the main page.
+    """
     return main_view.main_page(req)

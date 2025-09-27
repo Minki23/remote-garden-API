@@ -11,6 +11,10 @@ async def register_device(
     user_id: CurrentUserDep,
     service: UserDeviceServiceDep,
 ):
+    """
+    Register a new user device for push notifications.
+    Links the device to the current user account.
+    """
     device = await service.register_device(
         user_id=user_id, fcm_token=req.fcm_token, platform=req.platform
     )
@@ -22,5 +26,9 @@ async def remove_device(
     req: RemoveDeviceDTO,
     service: UserDeviceServiceDep,
 ):
+    """
+    Remove a previously registered user device.
+    Uses the FCM token to identify the device record.
+    """
     removed = await service.remove_device(req.fcm_token)
     return {"removed": removed}

@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
 
-from models.db import NotificationDb
+from common_db.db import NotificationDb
 from .utils.super_repo import SuperRepo
 
 from sqlalchemy import update

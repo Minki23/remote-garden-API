@@ -7,6 +7,9 @@ from core.mqtt.mqtt_subscriber import MqttTopicSubscriber
 
 
 async def subscribe_topics():
+    """
+    Subscribe all MQTT handlers to the broker topics.
+    """
     for handler in (
         DeviceReadingHandler,
         ConnHandler,

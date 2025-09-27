@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from models.db import EspDeviceDb
+from common_db.db import EspDeviceDb
 from repos.utils.super_repo import SuperRepo
 from typing import List, Optional
 

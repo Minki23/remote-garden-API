@@ -3,6 +3,9 @@ from pydantic import BaseModel
 
 
 class ReadingDTO(BaseModel):
+    """
+    DTO representing a single sensor reading.
+    """
     id: int
     device_id: int
     value: str

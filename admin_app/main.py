@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from sqladmin import Admin, ModelView
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from models import (
+from common_db.models import (
     UserDb,
     GardenDb,
     DeviceDb,

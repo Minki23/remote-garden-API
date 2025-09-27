@@ -1,10 +1,10 @@
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.db import ReadingDb, DeviceDb, EspDeviceDb
+from common_db.db import ReadingDb, DeviceDb, EspDeviceDb
 from .utils.super_repo import SuperRepo
 from sqlalchemy import select, and_, desc
 from datetime import datetime
-from models.enums import DeviceType
+from common_db.enums import DeviceType
 
 
 class ReadingRepository(SuperRepo[ReadingDb]):

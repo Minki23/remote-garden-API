@@ -17,6 +17,19 @@ router = APIRouter()
 
 @router.post("/trigger")
 async def trigger(trigger: TriggerDTO):
+    """
+    Endpoint for triggering agent actions.
+
+    Args:
+        trigger (TriggerDTO): Object containing `refresh_token` and `garden_id`.
+
+    Returns:
+        dict: JSON response `{"status": "triggered"}` when the trigger is accepted.
+
+    Details:
+        The function registers a new token, creates an instance of `AgentService`,
+        and starts an asynchronous background task to perform the action without blocking the request.
+    """
     token = (await service.register_token(trigger.refresh_token)).access_token
     agent = AgentService(BACKEND_URL, trigger.garden_id, token)
 

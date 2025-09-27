@@ -2,6 +2,9 @@ from enum import Enum, IntEnum
 
 
 class DeviceType(str, Enum):
+    """
+    Represents the different types of devices supported by the system.
+    """
     LIGHT_SENSOR = "LIGHT_SENSOR"
     AIR_HUMIDITY_SENSOR = "AIR_HUMIDITY_SENSOR"
     SOIL_MOISTURE_SENSOR = "SOIL_MOISTURE_SENSOR"
@@ -15,12 +18,18 @@ class DeviceType(str, Enum):
 
 
 class NotificationType(str, Enum):
+    """
+    Represents the different types of system notifications.
+    """
     alert = "alert"
     reminder = "reminder"
     system = "system"
 
 
 class ScheduleActionType(str, Enum):
+    """
+    Represents actions that can be scheduled for garden devices.
+    """
     WATER_ON = "WATER_ON"
     WATER_OFF = "WATER_OFF"
     ATOMIZE_ON = "ATOMIZE_ON"
@@ -32,6 +41,9 @@ class ScheduleActionType(str, Enum):
 
 
 class ControlActionType(IntEnum):
+    """
+    Represents low-level control actions mapped to device commands.
+    """
     WATER_ON = 0
     WATER_OFF = 1
     ATOMIZE_ON = 2

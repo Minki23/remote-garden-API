@@ -1,5 +1,5 @@
 from models.dtos.esp_device import EspDeviceDTO
-from models.db import EspDeviceDb
+from common_db.db import EspDeviceDb
 
 
 def db_esp_to_dto(db_obj: EspDeviceDb) -> EspDeviceDTO:

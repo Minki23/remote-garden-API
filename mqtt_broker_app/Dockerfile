@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app/mqtt-server
 
-COPY generate-backend-certs.sh /generate-backend-certs.sh
-COPY generate-mqtt-certs.sh /generate-mqtt-certs.sh
+COPY ./mqtt_broker_app/generate-backend-certs.sh /generate-backend-certs.sh
+COPY ./mqtt_broker_app/generate-mqtt-certs.sh /generate-mqtt-certs.sh
 
 RUN chmod +x /*.sh
 

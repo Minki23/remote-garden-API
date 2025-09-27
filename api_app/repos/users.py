@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.db import GardenDb, UserDb
+from common_db.db import GardenDb, UserDb
 from .utils.super_repo import SuperRepo
 from sqlalchemy.future import select
 

@@ -3,7 +3,7 @@ from models.dtos.readings import ReadingCreateDTO, ReadingDTO
 from mappers.readings import db_to_dto
 from repos.readings import ReadingRepository
 from datetime import datetime
-from models.enums import DeviceType
+from common_db.enums import DeviceType
 
 
 class ReadingService:

@@ -7,12 +7,12 @@ from fastapi import Path, Body, Depends
 from typing import Annotated, List
 
 from exceptions.scheme import AppException
-from models.enums import ScheduleActionType
+from common_db.enums import ScheduleActionType
 from models.dtos.gardens import GardenDTO
 from models.dtos.devices import DeviceDTO
 from models.dtos.notifications import NotificationDTO
 from models.dtos.schedules import WeeklyScheduleDTO
-from models.db import AgentDb, EspDeviceDb, GardenDb, UserDb
+from common_db.db import AgentDb, EspDeviceDb, GardenDb, UserDb
 from mappers.gardens import db_to_garden_dto
 from mappers.devices import db_to_dto as db_device_to_dto
 from mappers.notifications import db_to_dto as db_notification_to_dto

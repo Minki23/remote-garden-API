@@ -1,4 +1,4 @@
-from models.enums import ScheduleActionType
+from common_db.enums import ScheduleActionType
 from pydantic import BaseModel
 from typing import Literal, List
 

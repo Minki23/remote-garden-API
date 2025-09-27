@@ -64,10 +64,11 @@ cp private/server.key mosquitto/certs/
 
 # sudo chown -R vscode:1883 mosquitto/ 2>/dev/null || chown -R vscode:1883 mosquitto/
 chmod 640 private/*.key 2>/dev/null || true
-chmod 640 certs/*.crt 2>/dev/null || true
+chmod 644 certs/*.crt 2>/dev/null || true
 chmod 640 mosquitto/certs/*.key 2>/dev/null || true
-chmod 640 mosquitto/certs/*.crt 2>/dev/null || true
+chmod 644 mosquitto/certs/*.crt 2>/dev/null || true
 chmod 770 mosquitto/log
 chmod 770 mosquitto/data
+chown -R 1883:1883 mosquitto/
 
 echo "=== Done. Restart Mosquitto to apply new certificates. ==="

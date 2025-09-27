@@ -7,10 +7,38 @@ logger = logging.getLogger(__name__)
 
 
 class StatusHandler(BaseMqttCallbackHandler):
+    """
+    Handles incoming MQTT status messages from ESP devices.
+
+    Listens on the topic ``{mac}/status``. Updates the online/offline
+    status of the ESP device in the database.
+    """
+
     def __init__(self):
+        """
+        Initialize the status handler with the topic template.
+        """
         super().__init__("{mac}/status")
 
     async def __call__(self, topic: str, payload: dict):
+        """
+        Process a status message from an ESP device.
+
+        Parameters
+        ----------
+        topic : str
+            The MQTT topic containing the device MAC.
+        payload : dict
+            JSON payload containing:
+            - online : bool
+                Whether the device is currently online.
+
+        Notes
+        -----
+        - Extracts the device MAC from the topic.
+        - Updates the corresponding ESP device status in the database.
+        - Logs warnings if the MAC cannot be extracted or the device is missing.
+        """
         logger.info(f"[STATUS] topic={topic}, payload={payload}")
 
         status = payload.get("online")

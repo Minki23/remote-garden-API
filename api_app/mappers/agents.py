@@ -1,4 +1,4 @@
-from models.db import AgentDb
+from common_db.db import AgentDb
 from models.dtos.agents import AgentDTO
 
 

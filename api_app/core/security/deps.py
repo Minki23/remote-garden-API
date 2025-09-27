@@ -5,7 +5,7 @@ from core.security.jwt import decode_access_token
 from exceptions.scheme import AppException
 import logging
 
-from models.db import UserDb, AgentDb
+from common_db.db import UserDb, AgentDb
 from repos.users import UserRepository
 from sqlalchemy.future import select
 from enum import Enum

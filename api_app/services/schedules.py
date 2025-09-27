@@ -1,6 +1,6 @@
 from uuid import uuid4
 from exceptions.scheme import AppException
-from models.enums import ScheduleActionType
+from common_db.enums import ScheduleActionType
 from repos.schedules import ScheduleRepository
 
 

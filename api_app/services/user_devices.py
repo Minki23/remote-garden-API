@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime
-from models.db import UserDeviceDb
+from common_db.db import UserDeviceDb
 from repos.user_device import UserDeviceRepository
 
 

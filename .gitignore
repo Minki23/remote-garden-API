@@ -74,3 +74,4 @@ delivery_app/config/mqtt-server/mosquitto/data/
 delivery_app/config/mqtt-server/mosquitto/log/
 
 firebase-service-account.json
+docs/_build

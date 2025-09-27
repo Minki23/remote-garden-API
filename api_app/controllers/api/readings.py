@@ -7,7 +7,7 @@ from core.dependencies import (
     GardenDep,
 )
 from models.dtos.readings import ReadingDTO
-from models.enums import DeviceType
+from common_db.enums import DeviceType
 
 router = APIRouter()
 
@@ -22,6 +22,11 @@ async def get_by_filters_for_garden_paginated(
     offset: int = Query(0, ge=0),
     limit: int = Query(100, gt=0),
 ):
+    """
+    Retrieve sensor readings for a garden by device type.
+    Supports filtering with time range, offset and limit.
+    Useful for building charts or reports.
+    """
     start_time = start_time or datetime.min
     end_time = end_time or datetime.utcnow()
 
@@ -41,6 +46,10 @@ async def get_last_by_device_type(
     type: DeviceType,
     service: ReadingServiceDep,
 ):
+    """
+    Retrieve the most recent reading for a given device type.
+    Provides a quick snapshot of the latest garden state.
+    """
     return await service.get_last_for_garden_device_type(
         garden_id=garden.id,
         type=type,

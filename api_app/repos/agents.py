@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from models.db import AgentDb
+from common_db.db import AgentDb
 from .utils.super_repo import SuperRepo
 from datetime import datetime
 

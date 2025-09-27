@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Optional
-from models.db import UserDeviceDb
+from common_db.db import UserDeviceDb
 from repos.utils.super_repo import SuperRepo
 
 

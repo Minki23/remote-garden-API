@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from models.enums import DeviceType
+from common_db.enums import DeviceType
 
 
 class DeviceDTO(BaseModel):

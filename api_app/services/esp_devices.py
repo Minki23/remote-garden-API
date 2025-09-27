@@ -5,7 +5,7 @@ from clients.csr_client import CsrClient
 from core.mqtt.mqtt_publisher import MqttTopicPublisher
 from exceptions.scheme import AppException
 from mappers.esp_devices import db_esp_to_dto
-from models.db import EspDeviceDb
+from common_db.db import EspDeviceDb
 from models.dtos.esp_device import EspDeviceDTO
 from repos.esp_devices import EspDeviceRepository
 

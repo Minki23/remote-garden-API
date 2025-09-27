@@ -1,4 +1,4 @@
-from models.db import ReadingDb
+from common_db.db import ReadingDb
 from models.dtos.readings import ReadingDTO
 
 

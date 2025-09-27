@@ -2,13 +2,12 @@ FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1
 
-
 WORKDIR /app
 
-COPY requirements.txt .
+COPY ./csr_signer_app/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py ./main.py
+COPY ./csr_signer_app/main.py ./main.py
 
 EXPOSE 8000
 

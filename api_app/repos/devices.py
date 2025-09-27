@@ -1,8 +1,8 @@
 from typing import List
 from models.dtos.esp_device import EspDeviceDTO
-from models.enums import DeviceType
+from common_db.enums import DeviceType
 from sqlalchemy.ext.asyncio import AsyncSession
-from models.db import DeviceDb, EspDeviceDb, GardenDb
+from common_db.db import DeviceDb, EspDeviceDb, GardenDb
 from .utils.super_repo import SuperRepo
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload

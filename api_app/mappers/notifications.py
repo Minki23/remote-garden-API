@@ -1,4 +1,4 @@
-from models.db import NotificationDb
+from common_db.db import NotificationDb
 from models.dtos.notifications import NotificationDTO
 
 

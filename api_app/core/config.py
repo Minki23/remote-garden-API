@@ -19,6 +19,8 @@ class Config:
     GOOGLE_CLIENT_ID: str = getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET: str = getenv("GOOGLE_CLIENT_SECRET")
     GOOGLE_REDIRECT_URI: str = getenv("GOOGLE_REDIRECT_URI")
+    BASE_AGENT_URL: str = getenv("BASE_AGENT_URL")
+    BASE_CSR_URL: str = getenv("BASE_CSR_URL")
     RTSP_URL: str = getenv("RTSP_URL")
     USE_MOCK_CAMERA: bool = False
 

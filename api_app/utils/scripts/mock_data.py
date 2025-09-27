@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 
 from core.config import CONFIG
 from core.security.jwt import create_refresh_token, hash_refresh_token
-from models.enums import DeviceType, NotificationType
-from models.db import (
+from common_db.enums import DeviceType, NotificationType
+from common_db.db import (
     UserDb, GardenDb, DeviceDb, ReadingDb,
     NotificationDb, EspDeviceDb, UserDeviceDb
 )

@@ -5,7 +5,8 @@ WORKDIR /admin_app
 RUN apt-get update && apt-get install -y \
     libpq-dev
 
-COPY . .
+COPY ./admin_app .
+COPY ./common_db ./common_db
 
 RUN pip install -r ./requirements.txt
 

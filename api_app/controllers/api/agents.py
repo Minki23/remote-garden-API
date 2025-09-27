@@ -11,8 +11,12 @@ async def enable_agent_for_garden(
     garden: GardenDep,
     agent_service: AgentServiceDep,
     schedule_service: ScheduleServiceDep
-
 ):
+    """
+    Enable the agent for a given garden.
+
+    Activates the agent and schedules AI tasks.
+    """
     enabler = await agent_service.enable_agent_for_garden(garden.id)
     schedule_service.set_enable(garden.id, True)
     return enabler
@@ -24,6 +28,11 @@ async def disable_agent_for_garden(
     agent_service: AgentServiceDep,
     schedule_service: ScheduleServiceDep
 ):
+    """
+    Disable the agent for a given garden.
+
+    Deactivates the agent and clears scheduled AI tasks.
+    """
     enabler = await agent_service.disable_agent_for_garden(garden.id)
     schedule_service.set_enable(garden.id, False)
     schedule_service.delete_all_ai(garden.id)
@@ -35,6 +44,9 @@ async def refresh_agent(
     dto: RefreshTokenDTO,
     agent_service: AgentServiceDep,
 ):
+    """
+    Refresh the agent token.
+    """
     return await agent_service.refresh(dto.refresh_token)
 
 
@@ -44,6 +56,11 @@ async def create_agent_for_garden(
     agent_service: AgentServiceDep,
     schedule_service: ScheduleServiceDep
 ):
+    """
+    Create a new agent for a given garden.
+
+    Registers the agent and sets up its schedule.
+    """
     agent = await agent_service.create_agent_for_garden(garden.id)
     schedule_service.create_agent(garden.id, CONFIG.AGENT_TRIGGER)
     return agent

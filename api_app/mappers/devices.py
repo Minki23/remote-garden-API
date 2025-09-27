@@ -1,4 +1,4 @@
-from models.db import DeviceDb
+from common_db.db import DeviceDb
 from models.dtos.devices import DeviceDTO
 
 

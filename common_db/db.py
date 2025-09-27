@@ -14,10 +14,12 @@ from .enums import DeviceType, NotificationType
 
 
 class Base(DeclarativeBase):
+    """Base class for SQLAlchemy ORM models."""
     pass
 
 
 class SuperDb(Base):
+    """Abstract base with common fields (id, created_at, updated_at)."""
     __abstract__ = True
 
     id: Mapped[int] = mapped_column(
@@ -32,6 +34,7 @@ class SuperDb(Base):
 
 
 class UserDeviceDb(SuperDb):
+    """Represents a user device (mobile app instance, FCM token)."""
     __tablename__ = "user_devices"
     __table_args__ = (UniqueConstraint(
         "fcm_token", name="uq_user_devices_fcm_token"),)
@@ -47,6 +50,7 @@ class UserDeviceDb(SuperDb):
 
 
 class UserDb(SuperDb):
+    """Represents an application user."""
     __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -69,6 +73,7 @@ class UserDb(SuperDb):
 
 
 class GardenDb(SuperDb):
+    """Represents a garden belonging to a user."""
     __tablename__ = "gardens"
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
@@ -87,6 +92,7 @@ class GardenDb(SuperDb):
 
 
 class DeviceDb(SuperDb):
+    """Represents a device attached to an ESP device (e.g. sensor, actuator)."""
     __tablename__ = "devices"
 
     esp_id: Mapped[int] = mapped_column(Integer, ForeignKey("esp_devices.id"))
@@ -102,6 +108,7 @@ class DeviceDb(SuperDb):
 
 
 class ReadingDb(SuperDb):
+    """Represents a sensor reading from a device."""
     __tablename__ = "readings"
 
     device_id: Mapped[int] = mapped_column(Integer, ForeignKey("devices.id"))
@@ -114,6 +121,7 @@ class ReadingDb(SuperDb):
 
 
 class NotificationDb(SuperDb):
+    """Represents a notification sent to a user."""
     __tablename__ = "notifications"
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
@@ -127,6 +135,7 @@ class NotificationDb(SuperDb):
 
 
 class EspDeviceDb(SuperDb):
+    """Represents an ESP32 device associated with a garden and/or user."""
     __tablename__ = "esp_devices"
 
     mac: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -136,43 +145,34 @@ class EspDeviceDb(SuperDb):
     client_crt: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     garden_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("gardens.id"), nullable=True
-    )
+        Integer, ForeignKey("gardens.id"), nullable=True)
     garden: Mapped[Optional["GardenDb"]] = relationship(
-        "GardenDb", back_populates="esp_devices", lazy="selectin"
-    )
+        "GardenDb", back_populates="esp_devices", lazy="selectin")
 
     user_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("users.id"), nullable=True
-    )
-    user: Mapped[Optional["UserDb"]] = relationship(
-        "UserDb", lazy="selectin"
-    )
+        Integer, ForeignKey("users.id"), nullable=True)
+    user: Mapped[Optional["UserDb"]] = relationship("UserDb", lazy="selectin")
 
     devices: Mapped[list["DeviceDb"]] = relationship(
-        "DeviceDb", back_populates="esp", cascade="all, delete-orphan"
-    )
+        "DeviceDb", back_populates="esp", cascade="all, delete-orphan")
 
     status: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False)
 
 
 class AgentDb(SuperDb):
+    """Represents an agent instance connected to a garden."""
     __tablename__ = "agents"
 
     garden_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("gardens.id"), nullable=False, index=True
-    )
+        Integer, ForeignKey("gardens.id"), nullable=False, index=True)
     enabled: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
+        Boolean, default=True, nullable=False)
 
-    refresh_token_hash: Mapped[Optional[str]] = mapped_column(
-        String, nullable=True
-    )
-    refresh_expires_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime, nullable=True
-    )
+    refresh_token_hash: Mapped[Optional[str]
+                               ] = mapped_column(String, nullable=True)
+    refresh_expires_at: Mapped[Optional[datetime]
+                               ] = mapped_column(DateTime, nullable=True)
 
     garden: Mapped["GardenDb"] = relationship(
         "GardenDb", back_populates="agents")

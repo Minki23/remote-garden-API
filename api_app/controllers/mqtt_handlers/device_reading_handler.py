@@ -3,7 +3,7 @@ from controllers.mqtt_handlers.base_device_handler import BaseDeviceHandler
 from core.db_context import async_session_maker
 from services.readings import ReadingService
 from repos.readings import ReadingRepository
-from models.enums import DeviceType
+from common_db.enums import DeviceType
 from models.dtos.readings import ReadingCreateDTO
 
 logger = logging.getLogger(__name__)
@@ -19,10 +19,35 @@ SENSOR_STR_TO_DEVICE_TYPE = {
 
 
 class DeviceReadingHandler(BaseDeviceHandler):
+    """
+    Handles incoming MQTT sensor readings from ESP devices.
+
+    Listens on the topic ``{mac}/device/sensor``. Maps sensor string
+    identifiers to device types and stores readings into the database.
+    Also propagates the data via WebSocket events to connected clients.
+    """
+
     def __init__(self):
+        """
+        Initialize the reading handler with the topic template.
+        """
         super().__init__("{mac}/device/sensor")
 
     async def __call__(self, topic: str, payload: dict):
+        """
+        Process a new sensor reading.
+
+        Parameters
+        ----------
+        topic : str
+            The MQTT topic containing the device MAC and sensor data.
+        payload : dict
+            JSON payload containing:
+            - sensor : str
+                Type of the sensor (light, soil_moisture, etc.)
+            - values : list[float]
+                The measurements collected by the sensor.
+        """
         logger.info(f"[SENSOR] topic={topic}, payload={payload}")
 
         sensor_str = payload.get("sensor")

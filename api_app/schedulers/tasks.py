@@ -1,7 +1,7 @@
 from clients.agent_client import AgentClient
 from core.celery.celery_app import celery_app
 from models.dtos.notifications import NotificationCreateDTO
-from models.enums import NotificationType, ScheduleActionType
+from common_db.enums import NotificationType, ScheduleActionType
 import logging
 import asyncio
 from core.db_context import async_session_maker
@@ -10,7 +10,7 @@ from repos.devices import DeviceRepository
 from repos.esp_devices import EspDeviceRepository
 from repos.users import UserRepository
 from services.devices import DeviceService
-from models.enums import DeviceType, ControlActionType
+from common_db.enums import DeviceType, ControlActionType
 from exceptions.scheme import AppException
 from controllers.push.push_notification import PushNotificationController
 

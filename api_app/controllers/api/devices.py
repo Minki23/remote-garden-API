@@ -4,7 +4,7 @@ from core.dependencies import (
     EspDeviceForGardenDep,
     SpecificEspDeviceForGardenDep,
 )
-from models.enums import ControlActionType, DeviceType
+from common_db.enums import ControlActionType, DeviceType
 from models.dtos.devices import DeviceDTO
 
 router = APIRouter()
@@ -12,8 +12,12 @@ router = APIRouter()
 
 @router.get("/garden/{garden_id}", response_model=list[DeviceDTO])
 async def get_by_garden(service: DeviceServiceDep, esps: EspDeviceForGardenDep):
-    return await service.get_all_for_esps(esps)
+    """
+    Get all devices in a garden.
 
+    Returns a list of devices associated with the garden’s ESPs.
+    """
+    return await service.get_all_for_esps(esps)
 
 CONTROL_MAP = {
     "water/on": (DeviceType.WATERER, ControlActionType.WATER_ON),
@@ -32,6 +36,11 @@ def make_all_handler(device_type: DeviceType, action_type: ControlActionType):
         service: DeviceServiceDep,
         esps: EspDeviceForGardenDep,
     ):
+        """
+        Control all ESP devices of type ``{device_type}`` in a garden.
+
+        Executes the specified action across all devices.
+        """
         return await service.control_device(esps, device_type, action_type)
 
     return control_all_action
@@ -42,6 +51,11 @@ def make_one_handler(device_type: DeviceType, action_type: ControlActionType):
         service: DeviceServiceDep,
         esp: SpecificEspDeviceForGardenDep,
     ):
+        """
+        Control a specific ESP device of type ``{device_type}``.
+
+        Executes the specified action on a single device.
+        """
         return await service.control_device([esp], device_type, action_type)
 
     return control_one_action

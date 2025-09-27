@@ -9,7 +9,11 @@ SERVICES = admin_app agent_app api_app mqtt_broker_app csr_signer_app mock_mqtt_
 .PHONY: build
 build:
 	@echo ">>> Building image: $(IMAGE)"
-	docker build -t $(IMAGE) $(SERVICE)
+ifeq ($(SERVICE), .)
+	docker build -t $(IMAGE) .
+else
+	docker build -f $(SERVICE)/Dockerfile -t $(IMAGE) .
+endif
 
 .PHONY: push
 push:
@@ -24,7 +28,7 @@ deploy: build push
 build-all:
 	@for s in $(SERVICES); do \
 		echo ">>> Building image: $(REGISTRY)/$$s:$(TAG)"; \
-		docker build -t $(REGISTRY)/$$s:$(TAG) $$s; \
+		docker build -f $$s/Dockerfile -t $(REGISTRY)/$$s:$(TAG) .; \
 	done
 
 .PHONY: push-all
@@ -59,20 +63,31 @@ help:
 	@echo "Usage: make [target] [VARIABLE=value]"
 	@echo ""
 	@echo "Targets:"
-	@echo "  build          Build one Docker image"
-	@echo "  push           Push one Docker image"
-	@echo "  deploy         Build + Push one Docker image"
-	@echo "  build-all      Build all services: $(SERVICES)"
-	@echo "  push-all       Push all services"
-	@echo "  deploy-all     Build + Push all services"
-	@echo "  run            Run docker-compose from delivery_app"
-	@echo "  run-detached   Run docker-compose from delivery_app in background"
-	@echo "  stop           Stop docker-compose from delivery_app"
+	@echo "  build              Build one Docker image"
+	@echo "  push               Push one Docker image"
+	@echo "  deploy             Build + Push one Docker image"
+	@echo "  build-all          Build all services: $(SERVICES)"
+	@echo "  push-all           Push all services"
+	@echo "  deploy-all         Build + Push all services"
+	@echo "  build-service      Build specific service by name"
+	@echo "  run                Run docker-compose from delivery_app"
+	@echo "  run-detached       Run docker-compose from delivery_app in background"
+	@echo "  stop               Stop docker-compose from delivery_app"
+	@echo "  logs               Show docker-compose logs"
+	@echo "  status             Show docker-compose status"
+	@echo "  clean              Clean up Docker resources"
+	@echo "  clean-images       Remove all built images"
 	@echo ""
 	@echo "Variables:"
-	@echo "  SERVICE   Path to service directory (default: .)"
-	@echo "  REGISTRY  Docker registry/org (default: your-docker-org)"
-	@echo "  TAG       Image tag (default: latest)"
+	@echo "  SERVICE       Path to service directory (default: .)"
+	@echo "  SERVICE_NAME  Specific service name for build-service target"
+	@echo "  REGISTRY      Docker registry/org (default: your-docker-org)"
+	@echo "  TAG           Image tag (default: latest)"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make build-service SERVICE_NAME=admin_app"
+	@echo "  make deploy SERVICE=admin_app REGISTRY=myregistry TAG=v1.0"
+	@echo "  make build-all TAG=development"
 	@echo ""
 
 .DEFAULT_GOAL := help

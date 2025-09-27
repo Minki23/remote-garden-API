@@ -1,7 +1,7 @@
 from typing import List, Sequence
 from exceptions.scheme import AppException
 from models.dtos.esp_device import EspDeviceDTO
-from models.enums import ControlActionType, DeviceType
+from common_db.enums import ControlActionType, DeviceType
 from models.dtos.devices import DeviceDTO
 from mappers.devices import db_to_dto
 from repos.devices import DeviceRepository

@@ -1,17 +1,11 @@
 import logging
 from controllers.mqtt_handlers.base_device_handler import BaseDeviceHandler
-from core.mqtt.base_mqtt_callback_handler import BaseMqttCallbackHandler
 from core.db_context import async_session_maker
-from core.websocket.websocket_manager import websocket_manager
 from models.dtos.notifications import NotificationCreateDTO
 from repos.notifications import NotificationRepository
 from services.notifications import NotificationService
-from services.readings import ReadingService
-from repos.readings import ReadingRepository
 from repos.devices import DeviceRepository
-from repos.users import UserRepository
-from models.enums import DeviceType, NotificationType
-from models.dtos.readings import ReadingCreateDTO
+from common_db.enums import DeviceType, NotificationType
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +18,37 @@ ACTUATOR_STR_TO_DEVICE_TYPE = {
 
 
 class ActuatorConfirmHandler(BaseDeviceHandler):
+    """
+    MQTT handler responsible for processing actuator confirmation messages.
+    Subscribed to the topic pattern ``{mac}/device/confirm``.
+
+    This handler updates device states in the database and, if possible,
+    triggers user notifications about actuator state changes.
+    """
+
     def __init__(self):
+        """
+        Initialize the handler with the appropriate MQTT topic template.
+        """
         super().__init__("{mac}/device/confirm")
 
     async def __call__(self, topic: str, payload: dict):
+        """
+        Handle an incoming actuator confirmation MQTT message.
+
+        Parameters
+        ----------
+        topic : str
+            The MQTT topic that carried the message.
+        payload : dict
+            The parsed JSON payload with fields like:
+              - ``device``: string name of actuator (e.g. "water").
+              - ``action``: expected to be "on" or "off".
+              - ``status``: confirmation status of the action.
+
+        Returns
+        -------
+        """
         logger.info(f"[ACTUATOR_CONFIRM] topic={topic}, payload={payload}")
 
         device_str = payload.get("device")
@@ -68,8 +89,14 @@ class ActuatorConfirmHandler(BaseDeviceHandler):
                     not_service = NotificationService(
                         NotificationRepository(session))
                     status = "enabled" if new_enabled else "disabled"
-                    await not_service.create(NotificationCreateDTO(
-                        user_id=user.id, message=f"Device {device_type} is {status}", type=NotificationType.alert))
+                    await not_service.create(
+                        NotificationCreateDTO(
+                            user_id=user.id,
+                            message=f"Device {device_type} is {status}",
+                            type=NotificationType.alert,
+                        )
+                    )
                 else:
                     logger.warning(
-                        "Cannot send notification because owner of esp is not specified")
+                        "Cannot send notification because owner of esp is not specified"
+                    )

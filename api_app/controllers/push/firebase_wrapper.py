@@ -11,6 +11,11 @@ _firebase_initialized = False
 
 
 def _init_firebase():
+    """
+    Initialize the Firebase Admin SDK once using a service account JSON file.
+
+    Logs an error if the service account file is missing or initialization fails.
+    """
     global _firebase_initialized
     if _firebase_initialized:
         return
@@ -30,7 +35,16 @@ def _init_firebase():
 
 
 class FirebaseWrapper:
+    """
+    Wrapper for sending push notifications via Firebase.
+    """
+
     def __init__(self):
+        """
+        Initialize FirebaseWrapper.
+
+        Ensures Firebase is initialized before sending any notifications.
+        """
         _init_firebase()
 
     async def send_to_tokens(
@@ -40,6 +54,25 @@ class FirebaseWrapper:
         body: str,
         data: Optional[dict] = None,
     ):
+        """
+        Send a push notification to the specified device tokens.
+
+        Parameters
+        ----------
+        tokens : list[str]
+            List of device registration tokens to receive the notification.
+        title : str
+            Notification title.
+        body : str
+            Notification body.
+        data : Optional[dict]
+            Optional key-value payload to send alongside the notification.
+
+        Returns
+        -------
+        response
+            Firebase response object if successful, None otherwise.
+        """
         if not _firebase_initialized:
             logger.error(
                 "Firebase not initialized. Push notifications unavailable.")

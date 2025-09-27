@@ -1,4 +1,4 @@
-from models import db
+from common_db import db
 from models.dtos import gardens as dto
 
 
