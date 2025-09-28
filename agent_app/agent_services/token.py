@@ -1,6 +1,6 @@
 import logging
-from clients.backend_token import BackendTokenClient
-from models.token import TokenDTO
+from agent_clients.backend_token import BackendTokenClient
+from agent_models.agent_token import AgentTokenDTO as TokenDTO
 
 logger = logging.getLogger(__name__)
 
@@ -8,10 +8,6 @@ logger = logging.getLogger(__name__)
 class TokenService:
     """
     Service for handling authentication tokens.
-
-    This service communicates with the backend via
-    :class:`clients.backend_token.BackendTokenClient` to exchange
-    refresh tokens for access tokens.
     """
 
     def __init__(self, backend_url: str):

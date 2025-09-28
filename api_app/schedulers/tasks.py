@@ -28,7 +28,7 @@ _ACTION_MAP = {
 }
 
 
-@celery_app.task(name="app.schedulers.tasks.run_scheduled_action")
+@celery_app.task(name="schedulers.tasks.run_scheduled_action")
 def run_scheduled_action(garden_id: int, action: ScheduleActionType):
     """
     Execute a scheduled action for a garden.
@@ -69,7 +69,7 @@ def run_scheduled_action(garden_id: int, action: ScheduleActionType):
     asyncio.run(inner())
 
 
-@celery_app.task(name="app.schedulers.tasks.trigger_agent")
+@celery_app.task(name="schedulers.tasks.trigger_agent")
 def run_trigger_agent(garden_id: int):
     """
     Trigger the agent assigned to a garden.
@@ -87,7 +87,9 @@ def run_trigger_agent(garden_id: int):
                 agent = await repo.get_by_garden(garden_id)
 
                 if agent:
-                    await client.trigger(agent.id, garden_id)
+                    await client.trigger(agent.id, garden_id, agent.context)
+                else:
+                    logger.warning("Cannot trigger agent")
 
             except AppException as e:
                 logger.error(f"[Scheduled] AppException: {e.message}")

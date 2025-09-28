@@ -1,8 +1,8 @@
 from pydantic import BaseModel
-from models.enums import DeviceType
+from agent_models.enums import DeviceType
 
 
-class DeviceDTO(BaseModel):
+class ApiDeviceDTO(BaseModel):
     """
     Data Transfer Object representing a device.
 

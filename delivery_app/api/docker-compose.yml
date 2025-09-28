@@ -42,17 +42,24 @@ services:
   celery:
     image: your-docker-org/api_app:latest
 
-    command: celery -A app.core.celery.celery_app worker --loglevel=info -E
+    command: celery -A core.celery.celery_app worker --loglevel=info -E
     depends_on:
       - redis
     env_file: ./.env
     networks:
       - garden-net
 
+    healthcheck:
+      test: [ "CMD", "celery", "-A", "core.celery.celery_app", "inspect", "ping" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
   scheduler:
     image: your-docker-org/api_app:latest
 
-    command: celery -A app.core.celery.celery_app beat --scheduler redbeat.RedBeatScheduler --loglevel=info
+    command: celery -A core.celery.celery_app beat --scheduler redbeat.RedBeatScheduler --loglevel=info
     depends_on:
       - redis
     env_file: ./.env
@@ -62,11 +69,14 @@ services:
   flower:
     image: your-docker-org/api_app:latest
 
-    command: celery -A app.core.celery.celery_app flower --loglevel=info --port=5555
+    command: celery -A core.celery.celery_app flower --loglevel=info --port=5555
     ports:
       - "5555:5555"
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+      celery:
+        condition: service_healthy
     env_file: ./.env
     networks:
       - garden-net

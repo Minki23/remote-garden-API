@@ -1,10 +1,10 @@
 import httpx
 from datetime import datetime
 from typing import List, Optional
-from models.schedule import ScheduleDTO
-from models.reading import ReadingDTO
-from models.device import DeviceDTO
-from models.enums import ScheduleActionType, DeviceType, ControlActionType
+from agent_models.schedule import ApiScheduleDTO as ScheduleDTO
+from agent_models.reading import ApiReadingDTO as ReadingDTO
+from agent_models.device import ApiDeviceDTO as DeviceDTO
+from agent_models.enums import ScheduleActionType, DeviceType, ControlActionType
 
 CONTROL_MAP: dict[tuple[DeviceType, ControlActionType], str] = {
     (DeviceType.WATERER, ControlActionType.WATER_ON): "water/on",

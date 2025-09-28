@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class ReadingDTO(BaseModel):
+class ApiReadingDTO(BaseModel):
     """
     DTO representing a single sensor reading.
     """

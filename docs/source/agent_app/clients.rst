@@ -4,7 +4,7 @@ Clients
 Backend Agent Client
 --------------------
 
-.. automodule:: agent_app.clients.backend_agent
+.. automodule:: agent_app.agent_clients.backend_agent
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ Backend Agent Client
 Backend Token Client
 --------------------
 
-.. automodule:: agent_app.clients.backend_token
+.. automodule:: agent_app.agent_clients.backend_token
    :members:
    :undoc-members:
    :show-inheritance:

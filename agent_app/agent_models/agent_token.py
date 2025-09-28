@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 
 
-class TokenDTO(BaseModel):
+class AgentTokenDTO(BaseModel):
     """
-    DTO representing authentication tokens.
+    DTO representing agent authentication tokens.
     """
     access_token: str
     refresh_token: str | None = None

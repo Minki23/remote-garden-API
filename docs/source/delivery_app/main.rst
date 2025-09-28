@@ -34,32 +34,38 @@ Core Responsibilities
 ``delivery_app`` takes care of the following system-wide responsibilities:
 
 1. **Service Orchestration**
+
    - Define and run Docker containers for the API, Agent, PostgreSQL, Redis,
      Celery, MQTT broker, and certificate authority.
    - Ensure dependencies are resolved in the correct startup order.
 
 2. **Networking**
+
    - Configure container networking to allow services to reach each other
      securely via internal Docker networks.
    - Expose public ports only when required (e.g., API, MQTT).
 
 3. **Security and Certificates**
+
    - Include the CSR Signer service, which acts as a lightweight
      certificate authority.
    - Provide runtime certificate generation for ESP devices to establish
      mutual TLS with the MQTT broker.
 
 4. **Task Management**
+
    - Run Celery workers and the Celery beat scheduler for background
      tasks, automations, and reminders.
    - Ensure reliable event-driven communication through Redis.
 
 5. **Monitoring and Debugging (Development Mode)**
+
    - Provide an Admin Panel service that connects to the database and
      allows developers to inspect data directly.
    - Include a Mock MQTT Publisher that simulates ESP-based garden devices,
      which is particularly useful for integration testing when hardware
      is unavailable.
+
 
 Included Components
 -------------------
@@ -115,52 +121,44 @@ Typical usage:
 
   .. code-block:: bash
 
-     make build SERVICE=agent_app REGISTRY=my-docker-org TAG=v1.0
+      make build SERVICE=agent_app REGISTRY=my-docker-org TAG=v1.0
 
 - **Push a single service image**
 
   .. code-block:: bash
 
-     make push SERVICE=agent_app
+      make push SERVICE=agent_app
 
 - **Build and push all services**
 
   .. code-block:: bash
 
-     make deploy-all REGISTRY=my-docker-org TAG=latest
+      make deploy-all REGISTRY=my-docker-org TAG=latest
 
 - **Run the full system via Docker Compose**
 
   .. code-block:: bash
 
-     make run
+      make run
 
 - **Run in detached (background) mode**
 
   .. code-block:: bash
 
-     make run-detached
+      make run-detached
 
 - **Stop all running services**
 
   .. code-block:: bash
 
-     make stop
-
-- **Clean up images and resources**
-
-  .. code-block:: bash
-
-     make clean-images
-     make clean
+      make stop
 
 The Makefile also provides a ``help`` target that lists all available
 commands and environment variables:
 
 .. code-block:: bash
 
-   make help
-
+      make help
 
 Conclusion
 ----------

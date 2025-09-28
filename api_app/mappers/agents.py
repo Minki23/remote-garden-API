@@ -11,4 +11,5 @@ def db_to_dto(agent: AgentDb) -> AgentDTO:
         garden_id=agent.garden_id,
         enabled=agent.enabled,
         refresh_expires_at=agent.refresh_expires_at,
+        context=agent.context
     )

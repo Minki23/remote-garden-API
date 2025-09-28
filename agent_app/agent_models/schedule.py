@@ -1,8 +1,8 @@
 from pydantic import BaseModel
-from models.enums import ScheduleActionType
+from agent_models.enums import ScheduleActionType
 
 
-class ScheduleDTO(BaseModel):
+class ApiScheduleDTO(BaseModel):
     """
     DTO representing a scheduled action with its cron expression.
     """

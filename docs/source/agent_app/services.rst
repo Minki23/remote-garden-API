@@ -4,7 +4,7 @@ Services
 Agent Service
 -------------
 
-.. automodule:: agent_app.services.agent
+.. automodule:: agent_app.agent_services.agent
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ Agent Service
 Token Service
 -------------
 
-.. automodule:: agent_app.services.token
+.. automodule:: agent_app.agent_services.token
    :members:
    :undoc-members:
    :show-inheritance:

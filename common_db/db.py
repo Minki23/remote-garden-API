@@ -174,5 +174,8 @@ class AgentDb(SuperDb):
     refresh_expires_at: Mapped[Optional[datetime]
                                ] = mapped_column(DateTime, nullable=True)
 
+    context: Mapped[Optional[str]] = mapped_column(
+        String, nullable=True)
+
     garden: Mapped["GardenDb"] = relationship(
         "GardenDb", back_populates="agents")

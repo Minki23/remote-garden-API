@@ -18,7 +18,7 @@ class ScheduleRepository:
             celery_app.conf.redbeat_redis_url
         )
 
-    def list(self, garden_id: int) -> List[dict]:
+    def list_all(self, garden_id: int) -> List[dict]:
         """
         List all scheduled tasks for a given garden.
         Returns a list of task metadata dicts.

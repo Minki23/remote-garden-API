@@ -3,7 +3,7 @@
 set -e
 
 echo "Creating missing tables (SQLAlchemy)..."
-python -m app.db_init
+python -m db_init
 
 echo "Starting FastAPI..."
-exec bash ../prod.sh
+exec bash ./prod.sh

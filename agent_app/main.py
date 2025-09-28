@@ -8,7 +8,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 
-#: FastAPI application instance
 app = FastAPI(
     title="Agent API",
     version="1.0.0",
@@ -20,7 +19,6 @@ app = FastAPI(
 """FastAPI application providing the Agent API."""
 
 
-#: Register API routes
 app.include_router(trigger_router, prefix="/agent", tags=["agent"])
 
 

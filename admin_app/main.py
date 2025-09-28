@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from sqladmin import Admin, ModelView
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from common_db.models import (
+from common_db.db import (
     UserDb,
     GardenDb,
     DeviceDb,
@@ -116,6 +116,7 @@ class AgentAdmin(ModelView, model=AgentDb):
         AgentDb.enabled,
         AgentDb.refresh_token_hash,
         AgentDb.refresh_expires_at,
+        AgentDb.context,
         AgentDb.created_at,
         AgentDb.updated_at,
     ]

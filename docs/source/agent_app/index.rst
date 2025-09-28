@@ -14,7 +14,7 @@ Its main responsibilities:
 - Receiving **triggers** from the backend.
 - Fetching an **access token** from the backend.
 - Using the **Backend Agent Client** to query and control devices.
-- Running tasks asynchronously (non-blocking with ``asyncio``).
+- Running tasks asynchronously.
 - Reporting results of actions to logs.
 
 Usage

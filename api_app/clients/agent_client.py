@@ -8,13 +8,19 @@ class AgentClient:
     Client for communicating with the Agent microservice.
     """
 
-    async def trigger(self, refresh_token: str, garden_id: int) -> dict:
+    async def trigger(
+        self,
+        refresh_token: str,
+        garden_id: int,
+        context: str | None = None
+    ) -> dict:
         """
         Trigger the Agent to perform automation tasks for a given garden.
 
         This method sends a POST request to the Agent App with the user's
-        refresh token and the garden ID. If the request succeeds, it returns
-        the Agent's JSON response. Otherwise, it raises an exception.
+        refresh token, the garden ID, and optionally a context string.
+        If the request succeeds, it returns the Agent's JSON response.
+        Otherwise, it raises an exception.
 
         Parameters
         ----------
@@ -22,6 +28,8 @@ class AgentClient:
             The refresh token of the authenticated user.
         garden_id : int
             Identifier of the garden to trigger automation for.
+        context : str, optional
+            Additional context string passed to the Agent App.
 
         Returns
         -------
@@ -38,9 +46,14 @@ class AgentClient:
             "refresh_token": refresh_token,
             "garden_id": garden_id,
         }
+        if context is not None:
+            payload["context"] = context
 
         async with httpx.AsyncClient() as client:
-            resp = await client.post(f"{CONFIG.BASE_AGENT_URL}/agent/trigger", json=payload)
+            resp = await client.post(
+                f"{CONFIG.BASE_AGENT_URL}/agent/trigger",
+                json=payload
+            )
 
         if resp.status_code != 200:
             raise AppException(f"Agent service error: {resp.text}")

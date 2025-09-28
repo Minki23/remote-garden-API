@@ -14,6 +14,7 @@ COPY ./api_app/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./api_app .
+COPY ./common_db ./common_db
 
 RUN chmod +x ./prod.sh ./dev.sh
 

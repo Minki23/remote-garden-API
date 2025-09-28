@@ -1,5 +1,5 @@
 import logging
-from clients.backend_agent import BackendAgentClient
+from agent_clients.backend_agent import BackendAgentClient
 
 logger = logging.getLogger(__name__)
 
@@ -25,14 +25,23 @@ class AgentService:
             garden_id, backend_url, access_token
         )
 
-    async def action(self):
+    async def action(self, context: str):
         """
         Execute the agent's main action.
+        This method triggers the agent logic for a given context like user preferences etc.
 
-        Returns:
-            list: A list of devices retrieved from the backend (@TODO whole logic)
+        Parameters
+        ----------
+        context : str
+            Additional context information that influences the agent's execution flow.
+
+        Returns
+        -------
+        list
+            A list of devices retrieved from the backend.
+            (@TODO: replace with the full logic result)
         """
-        logger.info("Agent is executed")
+        logger.info(f"Agent is executed with context: {context}")
         devices = await self.backend_client.get_devices()
         # @TODO add logic
 

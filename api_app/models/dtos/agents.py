@@ -8,3 +8,8 @@ class AgentDTO(BaseModel):
     garden_id: int
     enabled: bool
     refresh_expires_at: Optional[datetime]
+    context: Optional[str]
+
+
+class AgentEnableRequest(BaseModel):
+    context: str | None = None

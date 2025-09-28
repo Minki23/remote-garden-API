@@ -24,8 +24,9 @@ class Config:
     RTSP_URL: str = getenv("RTSP_URL")
     REDIS_HOST: str = getenv("REDIS_HOST")
     MQTT_BROKER_HOST: str = getenv("MQTT_BROKER_HOST")
-    MQTT_BROKER_PORT: str = getenv("MQTT_BROKER_PORT")
+    MQTT_BROKER_PORT: int = int(getenv("MQTT_BROKER_PORT", "1883"))
     USE_MOCK_CAMERA: bool = False
+    REDIS_PORT: str = getenv("REDIS_PORT")
 
     @staticmethod
     def get_config() -> Config:

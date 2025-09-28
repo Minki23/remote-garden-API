@@ -4,7 +4,7 @@ Models
 Device
 ------
 
-.. automodule:: agent_app.models.device
+.. automodule:: agent_app.agent_models.device
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ Device
 Enums
 -----
 
-.. automodule:: agent_app.models.enums
+.. automodule:: agent_app.agent_models.enums
    :members:
    :undoc-members:
    :show-inheritance:
@@ -20,7 +20,7 @@ Enums
 Reading
 -------
 
-.. automodule:: agent_app.models.reading
+.. automodule:: agent_app.agent_models.reading
    :members:
    :undoc-members:
    :show-inheritance:
@@ -28,7 +28,7 @@ Reading
 Schedule
 --------
 
-.. automodule:: agent_app.models.schedule
+.. automodule:: agent_app.agent_models.schedule
    :members:
    :undoc-members:
    :show-inheritance:
@@ -36,7 +36,7 @@ Schedule
 Token
 -----
 
-.. automodule:: agent_app.models.token
+.. automodule:: agent_app.agent_models.agent_token
    :members:
    :undoc-members:
    :show-inheritance:
@@ -44,7 +44,7 @@ Token
 Trigger
 -------
 
-.. automodule:: agent_app.models.trigger
+.. automodule:: agent_app.agent_models.trigger
    :members:
    :undoc-members:
    :show-inheritance:

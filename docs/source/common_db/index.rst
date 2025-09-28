@@ -9,6 +9,11 @@ that are reused across multiple microservices.
 It ensures consistency of entities like users, gardens, devices, readings,
 and notifications.
 
+.. image:: /_static/db.png
+   :alt: Common DB diagram
+   :align: center
+   :width: 80%
+
 Usage
 -----
 

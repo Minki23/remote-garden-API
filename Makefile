@@ -55,7 +55,7 @@ run-detached:
 .PHONY: stop
 stop:
 	@echo ">>> Stopping docker compose from delivery_app"
-	cd delivery_app && docker compose down
+	cd delivery_app && docker compose down -v
 
 .PHONY: help
 help:
@@ -73,10 +73,6 @@ help:
 	@echo "  run                Run docker-compose from delivery_app"
 	@echo "  run-detached       Run docker-compose from delivery_app in background"
 	@echo "  stop               Stop docker-compose from delivery_app"
-	@echo "  logs               Show docker-compose logs"
-	@echo "  status             Show docker-compose status"
-	@echo "  clean              Clean up Docker resources"
-	@echo "  clean-images       Remove all built images"
 	@echo ""
 	@echo "Variables:"
 	@echo "  SERVICE       Path to service directory (default: .)"
