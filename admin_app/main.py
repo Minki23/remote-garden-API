@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from sqladmin import Admin, ModelView
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.models.db import (
+from common_db.db import (
     UserDb,
     GardenDb,
     DeviceDb,
@@ -12,11 +12,11 @@ from app.models.db import (
     UserDeviceDb,
     AgentDb,
 )
-from app.core.config import CONFIG
+import os
 
 app = FastAPI()
 
-engine = create_async_engine(CONFIG.DB_CONNECTION_STRING, echo=True)
+engine = create_async_engine(os.getenv("DB_CONNECTION_STRING"), echo=True)
 
 admin = Admin(app, engine)
 
@@ -116,12 +116,12 @@ class AgentAdmin(ModelView, model=AgentDb):
         AgentDb.enabled,
         AgentDb.refresh_token_hash,
         AgentDb.refresh_expires_at,
+        AgentDb.context,
         AgentDb.created_at,
         AgentDb.updated_at,
     ]
 
 
-# Rejestracja widoków
 admin.add_view(UserAdmin)
 admin.add_view(GardenAdmin)
 admin.add_view(EspDeviceAdmin)

@@ -1,5 +1,8 @@
--r requirements.txt
+-r api_app/requirements.txt
 black>=24.3.0
 ruff>=0.4.0
 mypy>=1.10.0
 requests
+sphinx
+sphinx-autodoc-typehints
+sphinx_rtd_theme

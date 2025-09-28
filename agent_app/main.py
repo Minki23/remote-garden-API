@@ -16,9 +16,17 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json"
 )
+"""FastAPI application providing the Agent API."""
+
 
 app.include_router(trigger_router, prefix="/agent", tags=["agent"])
 
 
 if __name__ == "__main__":
+    """
+    Entry point for running the Agent API service.
+
+    This starts a Uvicorn server listening on host ``0.0.0.0`` and port ``8001``.
+    The application is reloaded automatically on code changes.
+    """
     uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)

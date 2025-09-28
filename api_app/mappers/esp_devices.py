@@ -1,0 +1,19 @@
+from models.dtos.esp_device import EspDeviceDTO
+from common_db.db import EspDeviceDb
+
+
+def db_esp_to_dto(db_obj: EspDeviceDb) -> EspDeviceDTO:
+    """
+    Convert an EspDeviceDb ORM object to an EspDeviceDTO.
+    """
+    return EspDeviceDTO(
+        id=db_obj.id,
+        mac=db_obj.mac,
+        secret=db_obj.secret,
+        client_key=db_obj.client_key,
+        client_crt=db_obj.client_crt,
+        created_at=db_obj.created_at,
+        updated_at=db_obj.updated_at,
+        garden_id=db_obj.garden_id,
+        status=db_obj.status,
+    )

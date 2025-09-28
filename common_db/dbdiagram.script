@@ -1,0 +1,94 @@
+
+Table users {
+  id integer [pk, increment]
+  email varchar [not null, unique]
+  google_sub varchar [unique]
+  auth varchar [unique]
+  admin boolean [default: false, not null]
+  refresh_token_hash varchar
+  refresh_expires_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table user_devices {
+  id integer [pk, increment]
+  user_id integer [not null]
+  fcm_token varchar [not null, unique]
+  platform varchar
+  last_seen timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table gardens {
+  id integer [pk, increment]
+  user_id integer [not null]
+  name varchar [not null]
+  send_notifications boolean [default: false]
+  enable_automation boolean [default: false]
+  use_fahrenheit boolean [default: false]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table esp_devices {
+  id integer [pk, increment]
+  mac varchar [not null, unique]
+  secret varchar [not null]
+  client_key varchar
+  client_crt varchar
+  garden_id integer
+  user_id integer
+  status boolean [default: false, not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table devices {
+  id integer [pk, increment]
+  esp_id integer [not null]
+  type varchar [not null]
+  enabled boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+
+Table readings {
+  id integer [pk, increment]
+  device_id integer [not null]
+  value varchar [not null]
+  timestamp timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table notifications {
+  id integer [pk, increment]
+  user_id integer [not null]
+  message varchar [not null]
+  read boolean [not null]
+  type varchar [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table agents {
+  id integer [pk, increment]
+  garden_id integer [not null]
+  enabled boolean [default: true, not null]
+  refresh_token_hash varchar
+  refresh_expires_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: user_devices.user_id > users.id
+Ref: gardens.user_id > users.id
+Ref: esp_devices.garden_id > gardens.id
+Ref: esp_devices.user_id > users.id
+Ref: devices.esp_id > esp_devices.id
+Ref: readings.device_id > devices.id
+Ref: notifications.user_id > users.id
+Ref: agents.garden_id > gardens.id
