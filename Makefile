@@ -1,6 +1,6 @@
 SERVICE ?= .
 IMAGE_NAME ?= $(notdir $(SERVICE))
-REGISTRY ?= your-docker-org
+REGISTRY ?= ghcr.io/filxxip
 TAG ?= latest
 IMAGE = $(REGISTRY)/$(IMAGE_NAME):$(TAG)
 
