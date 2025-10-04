@@ -42,21 +42,6 @@ push-all:
 deploy-all: build-all push-all
 	@echo ">>> All images deployed"
 
-.PHONY: run
-run:
-	@echo ">>> Starting docker compose from delivery_app"
-	cd delivery_app && docker compose build --no-cache && docker compose up --force-recreate
-
-.PHONY: run-detached
-run-detached:
-	@echo ">>> Starting docker compose from delivery_app in background"
-	cd delivery_app && docker compose up -d --build --force-recreate
-
-.PHONY: stop
-stop:
-	@echo ">>> Stopping docker compose from delivery_app"
-	cd delivery_app && docker compose down -v
-
 .PHONY: help
 help:
 	@echo ""
@@ -69,21 +54,17 @@ help:
 	@echo "  build-all          Build all services: $(SERVICES)"
 	@echo "  push-all           Push all services"
 	@echo "  deploy-all         Build + Push all services"
-	@echo "  build-service      Build specific service by name"
-	@echo "  run                Run docker-compose from delivery_app"
-	@echo "  run-detached       Run docker-compose from delivery_app in background"
-	@echo "  stop               Stop docker-compose from delivery_app"
 	@echo ""
 	@echo "Variables:"
 	@echo "  SERVICE       Path to service directory (default: .)"
-	@echo "  SERVICE_NAME  Specific service name for build-service target"
 	@echo "  REGISTRY      Docker registry/org (default: your-docker-org)"
 	@echo "  TAG           Image tag (default: latest)"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make build-service SERVICE_NAME=admin_app"
-	@echo "  make deploy SERVICE=admin_app REGISTRY=myregistry TAG=v1.0"
+	@echo "  make build SERVICE=admin_app REGISTRY=myregistry TAG=v1.0"
+	@echo "  make deploy SERVICE=api_app TAG=v1.0"
 	@echo "  make build-all TAG=development"
+	@echo "  make deploy-all REGISTRY=prod-registry TAG=v2.0"
 	@echo ""
 
 .DEFAULT_GOAL := help
