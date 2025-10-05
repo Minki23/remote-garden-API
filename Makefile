@@ -4,7 +4,7 @@ REGISTRY ?= ghcr.io/filxxip
 TAG ?= latest
 IMAGE = $(REGISTRY)/$(IMAGE_NAME):$(TAG)
 
-SERVICES = admin_app agent_app api_app mqtt_broker_app csr_signer_app mock_mqtt_app
+SERVICES = admin_app agent_app api_app mqtt_broker_app csr_signer_app mock_mqtt_app gh_proxy_app
 
 .PHONY: build
 build:
