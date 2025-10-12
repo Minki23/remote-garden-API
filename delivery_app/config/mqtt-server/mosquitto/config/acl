@@ -1,6 +1,0 @@
-pattern readwrite %u/#
-
-# @TODO change on backend name
-user mqtt-broker
-topic readwrite #
-
