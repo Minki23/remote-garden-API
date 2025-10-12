@@ -80,10 +80,10 @@
     <button id="copy-idtoken-btn" class="copy-button">📋 Copy ID Token</button>
 
     <div class="button-container">
-        <a class="link-button" href="https://api.localhost/docs" target="_blank">📘 Swagger Docs</a>
-        <a class="link-button" href="https://flower.localhost" target="_blank">📈 Flower Dashboard</a>
-        <a class="link-button" href="https://admin.localhost/admin" target="_blank">🛠 Admin Panel</a>
-        <a class="link-button" href="https://agent.localhost/docs" target="_blank">🤖 Agent Swagger</a>
+        <a class="link-button" href="https://localhost/api/docs" target="_blank">📘 Swagger Docs</a>
+        <a class="link-button" href="https://localhost/flower" target="_blank">📈 Flower Dashboard</a>
+        <a class="link-button" href="https://localhost/admin/admin" target="_blank">🛠 Admin Panel</a>
+        <a class="link-button" href="https://localhost/agent/docs" target="_blank">🤖 Agent Swagger</a>
         {# <a class="link-button" href="/static/camera.html" target="_blank">📹 Kamera</a> #}
     </div>
 
@@ -96,7 +96,7 @@
         lastIdToken = idToken;  // zapamiętujemy, żeby można było skopiować
 
         try {
-          const res = await fetch("/api/auth/login/google", {
+          const res = await fetch("/api/v1/auth/login/google", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id_token: idToken })
