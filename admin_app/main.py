@@ -23,7 +23,7 @@ engine = create_async_engine(os.getenv("DB_CONNECTION_STRING"), echo=True)
 admin = Admin(
     app,
     engine,
-    base_url="/",
+    base_url="/admin",
     title="Admin Panel"
 )
 
