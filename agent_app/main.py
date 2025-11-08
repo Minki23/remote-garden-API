@@ -12,7 +12,6 @@ app = FastAPI(
     title="Agent API",
     version="1.0.0",
     description="Microservice agent",
-    root_path="/agent"
 )
 """FastAPI application providing the Agent API."""
 

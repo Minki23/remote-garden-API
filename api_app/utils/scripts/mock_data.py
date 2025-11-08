@@ -26,6 +26,7 @@ def generate_realistic_reading_value(device_type: DeviceType) -> str:
         DeviceType.AIR_TEMPERATURE_SENSOR: lambda: f"{random.uniform(18.0, 32.0):.1f}",
         DeviceType.SIGNAL_STRENGHT: lambda: str(random.randint(-80, -25)),
         DeviceType.WATER_LEVEL: lambda: f"{random.uniform(25.0, 100.0):.1f}",
+        DeviceType.CAMERA: lambda: f"{random.uniform(25.0, 100.0):.1f}",
         DeviceType.WATERER: lambda: str(random.choice([0, 1])),
         DeviceType.ATOMIZER: lambda: str(random.choice([0, 1])),
         DeviceType.FANNER: lambda: str(random.choice([0, 1])),
