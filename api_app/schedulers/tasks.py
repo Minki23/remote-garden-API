@@ -1,10 +1,12 @@
 import logging
 import asyncio
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
 from clients.agent_client import AgentClient
 from core.celery.celery_app import celery_app
 from models.dtos.notifications import NotificationCreateDTO
 from common_db.enums import NotificationType, ScheduleActionType, DeviceType, ControlActionType
-from core.db_context import async_session_maker
+from core.config import CONFIG
 from repos.agents import AgentRepository
 from repos.devices import DeviceRepository
 from repos.esp_devices import EspDeviceRepository
@@ -15,7 +17,8 @@ from controllers.push.push_notification import PushNotificationController
 
 logger = logging.getLogger(__name__)
 
-# Mapowanie akcji harmonogramu na typ urządzenia i akcję sterującą
+DB_URL = CONFIG.DB_CONNECTION_STRING
+
 _ACTION_MAP = {
     ScheduleActionType.WATER_ON: (DeviceType.WATERER, ControlActionType.WATER_ON),
     ScheduleActionType.WATER_OFF: (DeviceType.WATERER, ControlActionType.WATER_OFF),
@@ -28,31 +31,22 @@ _ACTION_MAP = {
 }
 
 
-def run_async_in_isolated_loop(coro):
-    """
-    Uruchamia coroutine w osobnym event loopie (unikając błędów 'another operation in progress'
-    i 'attached to a different loop').
-    """
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        result = loop.run_until_complete(coro)
-    finally:
-        loop.close()
-    return result
+def create_local_session():
+    engine = create_async_engine(
+        DB_URL, echo=False, pool_size=5, max_overflow=10)
+    session_maker = async_sessionmaker(engine, expire_on_commit=False)
+    return session_maker, engine
 
 
 @celery_app.task(name="schedulers.tasks.run_scheduled_action")
 def run_scheduled_action(garden_id: int, action: ScheduleActionType):
-    """
-    Wykonuje zaplanowaną akcję w ogrodzie:
-    steruje urządzeniem i wysyła powiadomienie użytkownikowi.
-    """
     async def inner():
-        async with async_session_maker() as db:
+        session_maker, engine = create_local_session()
+        async with session_maker() as db:
             try:
                 if action not in _ACTION_MAP:
-                    logger.warning(f"No handler for action: {action}")
+                    logger.warning(
+                        f"[Scheduled] No handler for action: {action}")
                     return
 
                 device_type, control_action = _ACTION_MAP[action]
@@ -79,17 +73,17 @@ def run_scheduled_action(garden_id: int, action: ScheduleActionType):
                 logger.error(f"[Scheduled] AppException: {e.message}")
             except Exception as e:
                 logger.exception(f"[Scheduled] Unexpected error: {e}")
+            finally:
+                await engine.dispose()
 
-    return run_async_in_isolated_loop(inner())
+    asyncio.run(inner())
 
 
 @celery_app.task(name="schedulers.tasks.trigger_agent")
 def run_trigger_agent(garden_id: int):
-    """
-    Wyzwala agenta przypisanego do ogrodu (np. w celu wykonania logiki AI lub reakcji).
-    """
     async def inner():
-        async with async_session_maker() as db:
+        session_maker, engine = create_local_session()
+        async with session_maker() as db:
             try:
                 client = AgentClient()
                 logger.info(
@@ -103,7 +97,7 @@ def run_trigger_agent(garden_id: int):
                         f"[Scheduled] No agent for garden {garden_id}")
                     return
 
-                await client.trigger(agent.id, garden_id, agent.context)
+                await client.trigger(agent.refresh_token_hash, garden_id, agent.context or {})
                 logger.info(
                     f"[Scheduled] Agent {agent.id} triggered successfully")
 
@@ -111,5 +105,7 @@ def run_trigger_agent(garden_id: int):
                 logger.error(f"[Scheduled] AppException: {e.message}")
             except Exception as e:
                 logger.exception(f"[Scheduled] Unexpected error: {e}")
+            finally:
+                await engine.dispose()
 
-    return run_async_in_isolated_loop(inner())
+    asyncio.run(inner())

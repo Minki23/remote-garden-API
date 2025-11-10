@@ -45,9 +45,8 @@ class AgentClient:
         payload = {
             "refresh_token": refresh_token,
             "garden_id": garden_id,
+            "context": context or ""
         }
-        if context is not None:
-            payload["context"] = context
 
         async with httpx.AsyncClient() as client:
             resp = await client.post(

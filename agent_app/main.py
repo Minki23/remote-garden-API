@@ -9,6 +9,7 @@ logging.basicConfig(
 )
 
 app = FastAPI(
+    root_path="/agent",
     title="Agent API",
     version="1.0.0",
     description="Microservice agent",
@@ -16,7 +17,7 @@ app = FastAPI(
 """FastAPI application providing the Agent API."""
 
 
-app.include_router(trigger_router, prefix="/agent", tags=["agent"])
+app.include_router(trigger_router, tags=["agent"])
 
 
 if __name__ == "__main__":
