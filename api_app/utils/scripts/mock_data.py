@@ -25,7 +25,8 @@ def generate_realistic_reading_value(device_type: DeviceType) -> str:
         DeviceType.SOIL_MOISTURE_SENSOR: lambda: f"{random.uniform(15.0, 75.0):.1f}",
         DeviceType.AIR_TEMPERATURE_SENSOR: lambda: f"{random.uniform(18.0, 32.0):.1f}",
         DeviceType.SIGNAL_STRENGHT: lambda: str(random.randint(-80, -25)),
-        DeviceType.BATTERY: lambda: f"{random.uniform(25.0, 100.0):.1f}",
+        DeviceType.WATER_LEVEL: lambda: f"{random.uniform(25.0, 100.0):.1f}",
+        DeviceType.CAMERA: lambda: f"{random.uniform(25.0, 100.0):.1f}",
         DeviceType.WATERER: lambda: str(random.choice([0, 1])),
         DeviceType.ATOMIZER: lambda: str(random.choice([0, 1])),
         DeviceType.FANNER: lambda: str(random.choice([0, 1])),
@@ -178,7 +179,8 @@ async def create_devices_and_readings(session, esp_devices):
         DeviceType.AIR_HUMIDITY_SENSOR,
         DeviceType.SOIL_MOISTURE_SENSOR,
         DeviceType.LIGHT_SENSOR,
-        DeviceType.BATTERY,
+        DeviceType.WATER_LEVEL,
+        DeviceType.CAMERA,
         DeviceType.SIGNAL_STRENGHT
     ]
 

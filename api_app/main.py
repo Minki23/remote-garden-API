@@ -34,7 +34,8 @@ logging.getLogger("sqlalchemy").setLevel(logging.WARNING)
 logging.getLogger("sqlalchemy").disabled = True
 
 
-app = FastAPI(lifespan=lambda app: lifespan(app, subscribe_topics))
+app = FastAPI(root_path="/api",
+              lifespan=lambda app: lifespan(app, subscribe_topics))
 
 
 app.add_middleware(
@@ -72,5 +73,5 @@ async def debug_exception_handler(request: Request, exc: Exception):
 
 # Routing
 app.include_router(page_controller.router)
-app.include_router(api_router, prefix="/api")
+app.include_router(api_router, prefix="/v1")
 app.include_router(ws_router, prefix="/ws")

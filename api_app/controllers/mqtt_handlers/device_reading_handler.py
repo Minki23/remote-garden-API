@@ -14,7 +14,8 @@ SENSOR_STR_TO_DEVICE_TYPE = {
     "soil_moisture": DeviceType.SOIL_MOISTURE_SENSOR,
     "air_temperature": DeviceType.AIR_TEMPERATURE_SENSOR,
     "signal_strenght": DeviceType.SIGNAL_STRENGHT,
-    "battery": DeviceType.BATTERY
+    "water_level": DeviceType.WATER_LEVEL,
+    "camera": DeviceType.CAMERA
 }
 
 

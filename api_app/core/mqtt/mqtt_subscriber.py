@@ -108,23 +108,55 @@ class MqttTopicSubscriber:
         """
         await self.subscribe(handler.wildcard_topic, handler)
 
+    def _is_binary_topic(self, topic: str) -> bool:
+        """
+        Check if a topic should be treated as binary data.
+        
+        Parameters
+        ----------
+        topic : str
+            MQTT topic to check
+            
+        Returns
+        -------
+        bool
+            True if topic contains binary data (like images)
+        """
+        binary_patterns = [
+            '/camera/frame/',
+            '/device/image/',
+            '/binary/',
+        ]
+        return any(pattern in topic for pattern in binary_patterns)
+
     async def _handle_message(self, message: Message):
         """
         Internal method to process a single MQTT message.
         Dispatches to all callbacks matching the topic.
         """
-        raw_payload = message.payload.decode()
         topic = str(message.topic)
+        
+        # Check if this is binary data (e.g., camera frames)
+        if self._is_binary_topic(topic):
+            # Keep payload as bytes for binary data
+            payload = message.payload
+            logger.info(f"[MQTT IN] {topic}: <binary data, {len(payload)} bytes>")
+            # Don't store binary data in history
+        else:
+            # Decode and parse JSON for text data
+            try:
+                raw_payload = message.payload.decode('utf-8')
+                payload = json.loads(raw_payload)
+                logger.info(f"[MQTT IN] {topic}: {payload}")
+                self._history[topic].append(payload)
+            except UnicodeDecodeError as e:
+                logger.error(f"Failed to decode message on topic {topic}: {e}")
+                return
+            except json.JSONDecodeError as e:
+                logger.error(f"Invalid JSON on topic {topic}: {e}")
+                return
 
-        try:
-            payload = json.loads(raw_payload)
-        except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON on topic {topic}: {raw_payload} ({e})")
-            return
-
-        logger.info(f"[MQTT IN] {topic}: {payload}")
-        self._history[topic].append(payload)
-
+        # Dispatch to callbacks
         for pattern, callbacks in self._callbacks.items():
             if self._topic_matches(pattern, topic):
                 for callback in callbacks:

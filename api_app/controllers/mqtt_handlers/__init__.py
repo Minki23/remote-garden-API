@@ -1,3 +1,4 @@
+from .camera_frame_handler import CameraFrameHandler
 from .status_handler import StatusHandler
 from .actuator_confirm_handler import ActuatorConfirmHandler
 from .conn_handler import ConnHandler
@@ -15,6 +16,7 @@ async def subscribe_topics():
         ConnHandler,
         ActuatorConfirmHandler,
         StatusHandler,
+        CameraFrameHandler
     ):
         await MqttTopicSubscriber().subscribe_handler(handler())
 

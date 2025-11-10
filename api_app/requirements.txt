@@ -22,3 +22,5 @@ opencv-python>=4.9.0.80
 esptool>=4.6.2
 colorlog
 firebase-admin
+numpy
+Pillow

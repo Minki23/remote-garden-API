@@ -1,7 +1,9 @@
+import pathlib
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from sqladmin import Admin, ModelView
 from sqlalchemy.ext.asyncio import create_async_engine
-
+import sqladmin
 from common_db.db import (
     UserDb,
     GardenDb,
@@ -18,7 +20,19 @@ app = FastAPI()
 
 engine = create_async_engine(os.getenv("DB_CONNECTION_STRING"), echo=True)
 
-admin = Admin(app, engine)
+admin = Admin(
+    app,
+    engine,
+    base_url="/admin",
+    title="Admin Panel"
+)
+
+statics_path = pathlib.Path(sqladmin.__file__).parent / "statics"
+app.mount(
+    "/admin/statics",
+    StaticFiles(directory=str(statics_path)),
+    name="admin_statics"
+)
 
 
 class UserAdmin(ModelView, model=UserDb):

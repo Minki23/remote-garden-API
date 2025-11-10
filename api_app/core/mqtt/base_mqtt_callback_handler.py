@@ -73,18 +73,26 @@ class BaseMqttCallbackHandler:
 
         Example
         -------
-        Template: "device/{garden_id}/co2"
-        Topic:    "device/42/co2"
-        extract_from_topic(..., "garden_id") -> "42"
+        Template: "{mac}/device/camera/frame/{index}/#"
+        Topic:    "34851890f588/device/camera/frame/0/part/0"
+        extract_from_topic(..., "index") -> "0"
         """
-        pattern = re.escape(self.topic_template)
+        template = self.topic_template
+        if template.endswith("/#"):
+            template = template[:-2]
+
+        pattern = re.escape(template)
         pattern = re.sub(r"\\\{([^{}]+)\\\}", r"(?P<\1>[^/]+)", pattern)
+        pattern += r"(?:/.*)?$"
+
         match = re.match(pattern, topic)
 
         if not match:
             logger.error(
-                f"Topic '{topic}' does not match template '{self.topic_template}'")
+                f"Topic '{topic}' does not match template '{self.topic_template}'"
+            )
             raise AppException(
-                f"Topic '{topic}' does not match template '{self.topic_template}'")
+                f"Topic '{topic}' does not match template '{self.topic_template}'"
+            )
 
         return match.groupdict().get(key)

@@ -16,7 +16,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-app = FastAPI(title="GitHub Registry Proxy & Firmware Server")
+app = FastAPI(title="GitHub Registry Proxy & Firmware Server",
+              root_path="/gh-proxy")
 
 app.add_middleware(
     CORSMiddleware,
