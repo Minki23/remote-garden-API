@@ -141,7 +141,7 @@ class CameraFrameHandler(BaseDeviceHandler):
             # --- Send to user & agent via WebSocket ---
             try:
                 parts = topic.split("/")
-                mac = parts[1] if len(parts) > 1 else None
+                mac = parts[0] if len(parts) > 1 else None
                 if not mac:
                     logger.warning(f"Cannot extract MAC from topic: {topic}")
                     return

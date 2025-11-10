@@ -46,6 +46,7 @@ subjectAltName = @alt_names
 
 [ alt_names ]
 DNS.1 = ${SERVER_NAME}
+DNS.2 = vps-2505986b.vps.ovh.net
 IP.1  = 192.168.100.3
 EOF
 
