@@ -1,5 +1,4 @@
-
-
+import os
 import logging
 from typing import Optional
 from urllib.parse import unquote
@@ -15,14 +14,17 @@ class RegistryProxyService:
 
     def __init__(self, registry_service: GitHubRegistryService):
         self.registry_service = registry_service
+        self.http_timeout = float(os.getenv("HTTP_TIMEOUT", "60.0"))
+        self.docker_api_version = os.getenv("DOCKER_API_VERSION", "registry/2.0")
+        self.basic_auth_realm = os.getenv("BASIC_AUTH_REALM", "Docker Registry")
 
     def create_unauthorized_response(self) -> Response:
         """Create 401 Unauthorized response with Docker headers."""
         return Response(
             status_code=401,
             headers={
-                "Docker-Distribution-API-Version": "registry/2.0",
-                "WWW-Authenticate": 'Basic realm="Docker Registry"'
+                "Docker-Distribution-API-Version": self.docker_api_version,
+                "WWW-Authenticate": f'Basic realm="{self.basic_auth_realm}"'
             }
         )
 
@@ -30,7 +32,7 @@ class RegistryProxyService:
         """Create 200 OK response with Docker headers."""
         return Response(
             status_code=200,
-            headers={"Docker-Distribution-API-Version": "registry/2.0"}
+            headers={"Docker-Distribution-API-Version": self.docker_api_version}
         )
 
     async def proxy_request(self, request: Request, path: str) -> Response:
@@ -53,7 +55,7 @@ class RegistryProxyService:
                 headers=headers,
                 params=request.query_params,
                 content=body,
-                timeout=60.0,
+                timeout=self.http_timeout,
             )
 
         logger.info(f">>> {request.method} /{path} -> {resp.status_code}")

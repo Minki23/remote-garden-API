@@ -8,7 +8,7 @@ class BackendTokenClient:
         """Initialize the token client.
 
         Args:
-            base_url (str, optional): Backend base URL. Defaults to ``"http://backend:8000"``.
+            base_url (str, optional): Backend base URL.
         """
         self.base_url = base_url.rstrip("/")
 

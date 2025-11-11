@@ -1,5 +1,4 @@
-
-
+import os
 import base64
 import logging
 from typing import Optional
@@ -16,6 +15,7 @@ class GitHubRegistryService:
         self.github_user = github_user
         self.github_token = github_token
         self.ghcr_registry = ghcr_registry
+        self.ghcr_token_service = os.getenv("GHCR_TOKEN_SERVICE", "ghcr.io")
         self.token_cache = {}
 
     async def get_registry_token(self, scope: str) -> Optional[str]:
@@ -23,14 +23,14 @@ class GitHubRegistryService:
         if scope in self.token_cache:
             return self.token_cache[scope]
 
-        token_url = "https://ghcr.io/token"
+        token_url = f"{self.ghcr_registry}/token"
         auth_value = base64.b64encode(
             f"{self.github_user}:{self.github_token}".encode()).decode()
 
         async with httpx.AsyncClient() as client:
             resp = await client.get(
                 token_url,
-                params={"scope": scope, "service": "ghcr.io"},
+                params={"scope": scope, "service": self.ghcr_token_service},
                 headers={"Authorization": f"Basic {auth_value}"}
             )
 
