@@ -1,7 +1,7 @@
 import asyncio
 from fastapi import APIRouter
 from agent_services.agent import AgentService
-from agent_services.token import TokenService
+from agent_app.agent_services.token import TokenService
 from agent_models.trigger import ApiTriggerDTO as TriggerDTO
 import logging
 import os
