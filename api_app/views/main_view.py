@@ -6,7 +6,12 @@ from core.templates import templates
 
 def main_page(req: Request):
     now = datetime.now()
-    host_url = os.getenv("HOST_URL", "https://localhost")
+    ssl_enabled = os.getenv("SSL_ENABLED", "false").lower() == "true"
+    server_hostname = os.getenv("SERVER_HOSTNAME", "localhost")
+
+    scheme = "https" if ssl_enabled else "http"
+    host_url = f"{scheme}://{server_hostname}"
+
     return templates.TemplateResponse(
         req,
         "main.jinja",

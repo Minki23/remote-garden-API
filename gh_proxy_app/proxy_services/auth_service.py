@@ -1,3 +1,4 @@
+import os
 import base64
 import logging
 from fastapi import HTTPException, Request
@@ -13,13 +14,19 @@ class ProxyAuthService:
     def __init__(self, auth_api_url: str, auth_api_enabled: bool):
         self.auth_api_url = auth_api_url
         self.auth_api_enabled = auth_api_enabled
-        self.auth_client = httpx.AsyncClient(timeout=30.0)
+        self.auth_api_timeout = float(os.getenv("AUTH_API_TIMEOUT", "30.0"))
+        self.fallback_user_id = os.getenv("FALLBACK_USER_ID", "dev-user")
+        self.fallback_user_is_admin = os.getenv("FALLBACK_USER_IS_ADMIN", "true").lower() == "true"
+        self.auth_client = httpx.AsyncClient(timeout=self.auth_api_timeout)
 
     async def validate_user_token(self, token: str) -> dict:
         """Validate user token via auth API."""
         if not self.auth_api_enabled:
-            logger.info(">>> Auth disabled, allowing access")
-            return {"user_id": "dev-user", "is_admin": True}
+            logger.info("Auth disabled, allowing access")
+            return {
+                "user_id": self.fallback_user_id, 
+                "is_admin": self.fallback_user_is_admin
+            }
 
         try:
             response = await self.auth_client.get(
@@ -48,7 +55,10 @@ class ProxyAuthService:
             if self.auth_api_enabled:
                 raise HTTPException(
                     status_code=503, detail="Auth service unavailable")
-            return {"user_id": "fallback-user", "is_admin": True}
+            return {
+                "user_id": "fallback-user", 
+                "is_admin": True
+            }
 
     def extract_bearer_token(self, credentials: HTTPAuthorizationCredentials) -> str:
         """Extract Bearer token from credentials."""

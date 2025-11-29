@@ -1,10 +1,8 @@
-
-
+import os
 import logging
 from typing import Optional, Tuple
 
 import httpx
-
 
 logger = logging.getLogger(__name__)
 
@@ -15,21 +13,25 @@ class GitHubReleasesService:
     def __init__(self, github_repo: str, github_token: str):
         self.github_repo = github_repo
         self.github_token = github_token
+        self.github_api_base_url = os.getenv("GITHUB_API_BASE_URL", "https://api.github.com")
+        self.github_api_version = os.getenv("GITHUB_API_VERSION", "2022-11-28")
+        self.http_follow_redirects = os.getenv("HTTP_FOLLOW_REDIRECTS", "true").lower() == "true"
+        self.firmware_extensions = os.getenv("FIRMWARE_ASSET_EXTENSIONS", ".tar.gz,.zip,.bin,.gz").split(",")
 
     async def get_firmware_archive(self, version: str) -> Tuple[Optional[bytes], Optional[str]]:
         """Download firmware archive from GitHub releases."""
         if version.lower() == "latest":
-            url = f"https://api.github.com/repos/{self.github_repo}/releases/latest"
+            url = f"{self.github_api_base_url}/repos/{self.github_repo}/releases/latest"
         else:
-            url = f"https://api.github.com/repos/{self.github_repo}/releases/tags/{version}"
+            url = f"{self.github_api_base_url}/repos/{self.github_repo}/releases/tags/{version}"
 
         headers = {
             "Authorization": f"Bearer {self.github_token}",
             "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28"
+            "X-GitHub-Api-Version": self.github_api_version
         }
 
-        async with httpx.AsyncClient(follow_redirects=True) as client:
+        async with httpx.AsyncClient(follow_redirects=self.http_follow_redirects) as client:
             resp = await client.get(url, headers=headers)
             if resp.status_code != 200:
                 logger.error(
@@ -49,7 +51,7 @@ class GitHubReleasesService:
     def _find_firmware_asset(self, assets: list) -> Optional[dict]:
         """Find firmware asset in release assets."""
         for asset in assets:
-            if asset["name"].endswith((".tar.gz", ".zip", ".bin", ".gz")):
+            if any(asset["name"].endswith(ext.strip()) for ext in self.firmware_extensions):
                 return asset
         return None
 
@@ -61,7 +63,7 @@ class GitHubReleasesService:
         headers = base_headers.copy()
         headers["Accept"] = "application/octet-stream"
 
-        async with httpx.AsyncClient(follow_redirects=True) as client:
+        async with httpx.AsyncClient(follow_redirects=self.http_follow_redirects) as client:
             resp = await client.get(asset_url, headers=headers)
 
             if resp.status_code != 200:

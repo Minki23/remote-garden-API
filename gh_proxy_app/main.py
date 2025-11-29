@@ -32,10 +32,11 @@ security = HTTPBearer()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_USER = os.getenv("GITHUB_USER", "filxxip")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "filxxip/remote-garden-ESP")
-GHCR_REGISTRY = "https://ghcr.io"
+GHCR_REGISTRY = os.getenv("GHCR_REGISTRY", "https://ghcr.io")
 AUTH_API_URL = os.getenv("AUTH_API_URL", "http://localhost:3000/api")
 AUTH_API_ENABLED = os.getenv("AUTH_API_ENABLED", "true").lower() == "true"
 
+# Initialize services
 auth_service = ProxyAuthService(AUTH_API_URL, AUTH_API_ENABLED)
 registry_service = GitHubRegistryService(
     GITHUB_USER, GITHUB_TOKEN, GHCR_REGISTRY)
