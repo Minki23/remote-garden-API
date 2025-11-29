@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Union
 from agent_models.enums import ScheduleActionType
 
 
@@ -16,7 +16,7 @@ class ApiScheduleDTO(BaseModel):
     task_id: str
     enabled: bool
     cron: CronDTO
-    args: List[int]
+    args: List[Union[int, str]]
     garden_id: int
     action: Optional[ScheduleActionType]
     task: str
