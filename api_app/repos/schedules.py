@@ -25,22 +25,45 @@ class ScheduleRepository:
         """
         keys = self.redis_client.keys(f"redbeat:garden_{garden_id}_*")
         result = []
+
         for key in keys:
             data = self.redis_client.hget(key, "definition")
             if data is None:
                 continue
+
             definition = json.loads(data)
+
+            # --- Extract raw schedule as stored by RedBeat ---
+            schedule = definition.get("schedule", {})
+
+            # Normalize cron object into a clean JSON structure
+            cron = {
+                "__type__": "crontab",
+                "minute": schedule.get("minute", "*"),
+                "hour": schedule.get("hour", "*"),
+                "day_of_week": schedule.get("day_of_week", "*"),
+                "day_of_month": schedule.get("day_of_month", "*"),
+                "month_of_year": schedule.get("month_of_year", "*"),
+            }
+
+            # --- Extract args ---
+            args = definition.get("args", [])
+            extracted_garden_id = args[0] if len(args) > 0 else None
+            action = args[1] if len(args) > 1 else None  # "FAN_ON" itd
 
             result.append(
                 {
                     "task_id": definition["name"],
                     "enabled": definition.get("enabled", True),
-                    "cron": definition.get("schedule", {}),
-                    "args": definition.get("args", []),
-                    "task": definition.get("task", None),
+                    "cron": cron,
+                    "args": args,
+                    "garden_id": extracted_garden_id,
+                    "action": action,
+                    "task": definition.get("task"),
                     "created_by_ai": definition.get("options", {}).get("created_by_ai", False),
                 }
             )
+
         return result
 
     def create(self, task_name: str, cron: str, args: list, task_id: str, created_by_ai: bool = False) -> str:

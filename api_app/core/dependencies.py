@@ -1,3 +1,4 @@
+import logging
 from mappers.esp_devices import db_esp_to_dto
 from models.dtos.esp_device import AssignGardenDTO, EspDeviceDTO
 from repos.agents import AgentRepository
@@ -211,7 +212,8 @@ async def _get_garden_for_user(
     """
     garden = await GardenRepository(db).get_by_id_and_user(garden_id, user_id)
     if not garden:
-        raise AppException("Garden not found or access denied", 404)
+        raise AppException(
+            f"Garden not found or access denied1, {user_id}, {garden_id}", 404)
     return db_to_garden_dto(garden)
 
 
@@ -231,7 +233,8 @@ async def _get_user_garden_or_404(db, garden_id: int, user_id: int) -> GardenDb:
     """
     garden = await GardenRepository(db).get_by_id_and_user(garden_id, user_id)
     if not garden:
-        raise AppException("Garden not found or access denied", 404)
+        raise AppException(
+            f"Garden not found or access denied2, {user_id}, {garden_id}", 404)
     return garden
 
 
@@ -251,7 +254,8 @@ async def _get_agent_garden_or_404(db, garden_id: int, agent_id: int) -> GardenD
     """
     agent = await AgentRepository(db).get_by_id(agent_id)
     if not agent.garden_id == garden_id:
-        raise AppException("Garden not found or access denied", 404)
+        raise AppException(
+            f"Garden not found or access denied3, {agent_id}, {garden_id}", 404)
     return agent
 
 
@@ -294,6 +298,7 @@ async def _get_esp_device_for_garden(
         List of ESP device DTOs.
     """
     idd, subject_type = subject
+    logging.info(f"Subject {subject_type}")
     if subject_type == SubjectType.USER:
         await _get_user_garden_or_404(db, garden_id, idd)
     else:
@@ -305,6 +310,37 @@ async def _get_esp_device_for_garden(
         raise AppException("No ESP device found for this garden", 404)
 
     return [db_esp_to_dto(esp_device) for esp_device in esp_devices]
+
+
+async def _get_garden_for_subject(
+    garden_id: int = Path(...),
+    subject: tuple[int, SubjectType] = Depends(get_current_subject),
+    db=Depends(get_async_session),
+) -> GardenDTO:
+
+    subject_id, subject_type = subject
+
+    if subject_type == SubjectType.USER:
+        garden = await GardenRepository(db).get_by_id_and_user(garden_id, subject_id)
+        if not garden:
+            raise AppException(
+                f"Garden not found or access denied (user: {subject_id}, garden: {garden_id})",
+                404
+            )
+        return db_to_garden_dto(garden)
+
+    else:
+        agent = await AgentRepository(db).get_by_id(subject_id)
+        if not agent or agent.garden_id != garden_id:
+            raise AppException(
+                f"Garden not found or access denied (agent: {subject_id}, garden: {garden_id})",
+                404
+            )
+
+        garden = await GardenRepository(db).get_by_id(garden_id)
+        if not garden:
+            raise AppException(f"Garden does not exist: {garden_id}", 404)
+        return db_to_garden_dto(garden)
 
 
 async def _get_esp_device_for_id_in_garden(
@@ -431,7 +467,8 @@ async def _get_user_esp_and_garden(
 
     garden = await GardenRepository(db).get_by_id_and_user(data.garden_id, user_id)
     if not garden:
-        raise AppException("Garden not found or access denied", 404)
+        raise AppException(
+            f"Garden not found or access denied, {user_id}", 404)
 
     return db_esp_to_dto(esp_device), db_to_garden_dto(garden)
 
@@ -545,7 +582,7 @@ SpecificEspDeviceForGardenDep = Annotated[EspDeviceDTO, Depends(
     _get_esp_device_for_id_in_garden)]
 """Dependency returning a specific :class:`EspDeviceDTO` for a garden."""
 
-GardenDep = Annotated[GardenDTO, Depends(_get_garden_for_user)]
+GardenDep = Annotated[GardenDTO, Depends(_get_garden_for_subject)]
 """Dependency resolving a :class:`GardenDTO` for the current user."""
 
 UserNotificationDep = Annotated[NotificationDTO,

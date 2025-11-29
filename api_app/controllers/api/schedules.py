@@ -19,7 +19,7 @@ async def list_schedules(garden: GardenDep, service: ScheduleServiceDep, subject
     List all schedules for a specific garden.
     Includes both user-defined and agent-defined tasks.
     """
-    return service.list(garden.id)
+    return service.list_all(garden.id)
 
 
 @router.post("/{garden_id}/")

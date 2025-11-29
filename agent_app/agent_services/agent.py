@@ -1,13 +1,14 @@
 import json
 from datetime import datetime, timezone, timedelta
+import logging
 from openai import OpenAI
+from croniter import croniter
 
 from agent_models.enums import (
     DeviceType,
-    ControlActionType,
     ScheduleActionType
 )
-from agent_app.agent_clients.backend_agent import BackendAgentClient
+from agent_clients.backend_agent import BackendAgentClient
 
 
 AI_MAP = {
@@ -27,56 +28,87 @@ AI_MAP = {
 
 class AgentService:
 
-    openai_api_key=("key")
+    openai_api_key = ("key")
 
-    def __init__(self, api_key: str, garden_id: int, backend_token: str):
+    def __init__(self, api_key: str, backend_url: str, garden_id: int, backend_token: str):
         self.client = OpenAI(api_key=api_key)
-        self.backend = BackendAgentClient(garden_id=garden_id, access_token=backend_token)
+        self.backend = BackendAgentClient(
+            garden_id=garden_id,
+            access_token=backend_token,
+            base_url=backend_url
+        )
+
+    # ------------------------------------------------------------------
+    #  COMPUTE STATE FROM JSON WITH CRON OBJECTS
+    # ------------------------------------------------------------------
 
     async def compute_current_state(self):
         """
-        Stan urządzeń wynika z aktywnych schedule typu *_ON.
-        Zwraca:
-        state = {"fan": bool, ...}
-        remaining = {"fan": sec_remaining, ...}
+        Computes device state based on active *_ON schedules.
+        Uses croniter to compute next execution for each schedule.
         """
         schedules = await self.backend.list_schedules()
         now = datetime.now(timezone.utc)
 
-        state = {"fan": False, "heater": False, "water": False, "atomizer": False}
+        state = {"fan": False, "heater": False,
+                 "water": False, "atomizer": False}
         remaining = {"fan": 0, "heater": 0, "water": 0, "atomizer": 0}
 
         for sch in schedules:
-            action = sch.action
-            run_time = sch.cron_next_run  # backend zwraca next run datetime
 
-            # ON schedules
+            # IGNORE DISABLED SCHEDULES
+            if not sch.enabled:
+                continue
+
+            # IGNORE AGENT TASKS (no action)
+            if sch.action is None:
+                continue
+
+            # Convert cron object → cron string
+            cron_obj = sch.cron
+            cron_str = f"{cron_obj.minute} {cron_obj.hour} {cron_obj.day_of_month} {cron_obj.month_of_year} {cron_obj.day_of_week}"
+
+            try:
+                it = croniter(cron_str, now)
+                next_run = it.get_next(datetime)
+            except Exception:
+                continue
+
+            action = sch.action
+
             if action == ScheduleActionType.FAN_ON:
                 state["fan"] = True
-                remaining["fan"] = max(0, int((run_time - now).total_seconds()))
+                remaining["fan"] = max(
+                    0, int((next_run - now).total_seconds()))
 
             if action == ScheduleActionType.HEATING_MAT_ON:
                 state["heater"] = True
-                remaining["heater"] = max(0, int((run_time - now).total_seconds()))
+                remaining["heater"] = max(
+                    0, int((next_run - now).total_seconds()))
 
             if action == ScheduleActionType.WATER_ON:
                 state["water"] = True
-                remaining["water"] = max(0, int((run_time - now).total_seconds()))
+                remaining["water"] = max(
+                    0, int((next_run - now).total_seconds()))
 
             if action == ScheduleActionType.ATOMIZE_ON:
                 state["atomizer"] = True
-                remaining["atomizer"] = max(0, int((run_time - now).total_seconds()))
+                remaining["atomizer"] = max(
+                    0, int((next_run - now).total_seconds()))
 
         return state, remaining
 
+    # ------------------------------------------------------------------
+    #  MAIN ACTION
+    # ------------------------------------------------------------------
 
     async def action(self, plant_name: str):
 
         plant = plant_name.strip().lower()
 
         # pobranie odczytów
-        temp = await self.backend.get_last_reading(DeviceType.TEMPERATURE_SENSOR)
-        hum = await self.backend.get_last_reading(DeviceType.HUMIDITY_SENSOR)
+        temp = await self.backend.get_last_reading(DeviceType.AIR_TEMPERATURE_SENSOR)
+        hum = await self.backend.get_last_reading(DeviceType.AIR_HUMIDITY_SENSOR)
         light = await self.backend.get_last_reading(DeviceType.LIGHT_SENSOR)
 
         sensor_data = {
@@ -85,11 +117,9 @@ class AgentService:
             "light": light.value
         }
 
-        # pobranie stanu z backendu
+        # Aktualny stan
         state, remaining = await self.compute_current_state()
-        now_ts = datetime.now(timezone.utc).timestamp()
 
-        
         prompt = f"""
 You are an expert greenhouse controller.
 
@@ -112,16 +142,6 @@ You must:
 2. For every ON action, provide a duration in SECONDS.
 3. Do NOT restart a device that is already ON.
 4. If conditions are optimal, return actions to turn OFF all devices that are ON.
-
-Allowed action names (use EXACTLY these strings, no others):
-- FAN_ON
-- FAN_OFF
-- HEATING_MAT_ON
-- HEATING_MAT_OFF
-- WATER_ON
-- WATER_OFF
-- ATOMIZE_ON
-- ATOMIZE_OFF
 
 FORMAT — ONLY VALID JSON:
 
@@ -152,14 +172,13 @@ Example when turning on heater for 300 seconds:
                 model="gpt-4o-mini",
                 temperature=0,
                 messages=[
-                    {"role": "system", "content": "Return ONLY valid JSON. No explanations."},
+                    {"role": "system",
+                        "content": "Return ONLY valid JSON. No explanations."},
                     {"role": "user", "content": prompt}
                 ]
             )
-            content = completion.choices[0].message.content
-            ai = json.loads(content)
+            ai = json.loads(completion.choices[0].message.content)
         except Exception:
-            print("AI error or invalid JSON:", completion)
             ai = {"actions": [], "duration": {}, "reason": "Invalid JSON"}
 
         actions = ai.get("actions", [])
@@ -167,7 +186,9 @@ Example when turning on heater for 300 seconds:
 
         executed = []
 
-        
+        # ------------------------------------------------------------------
+        # Execute ON/OFF actions
+        # ------------------------------------------------------------------
         for act in actions:
 
             if act not in AI_MAP:
@@ -176,10 +197,9 @@ Example when turning on heater for 300 seconds:
 
             device_type, schedule_action = AI_MAP[act]
 
-            # jeśli to akcja ON
+            # ON actions
             if act.endswith("_ON"):
 
-                # ale urządzenie jest już ON → pomijamy
                 dev_key = {
                     DeviceType.FANNER: "fan",
                     DeviceType.HEATER: "heater",
@@ -196,29 +216,31 @@ Example when turning on heater for 300 seconds:
                     executed.append(f"{act}: invalid duration {dur}")
                     continue
 
-                # data wykonania
                 run_dt = datetime.now(timezone.utc) + timedelta(seconds=dur)
                 cron = f"{run_dt.minute} {run_dt.hour} {run_dt.day} {run_dt.month} *"
 
                 task_id = await self.backend.create_schedule(cron, schedule_action)
-                executed.append(f"{act} (duration {dur}s) → schedule {task_id}")
+                executed.append(
+                    f"{act} (duration {dur}s) → schedule {task_id}")
 
             else:
-                # akcje OFF
-                cron = "* * * * *"  # wykonaj od razu
+                # OFF actions – run immediately
+                cron = "* * * * *"
                 task_id = await self.backend.create_schedule(cron, schedule_action)
                 executed.append(f"{act} → schedule {task_id}")
 
-        # Do edycji lub usunięcia
+        # ------------------------------------------------------------------
+        # Logging
+        # ------------------------------------------------------------------
 
-        print("\n=== AGENT REPORT ===")
-        print("Sensors:", sensor_data)
-        print("State:", state)
-        print("Remaining:", remaining)
-        print("AI actions:", actions)
-        print("AI duration:", durations)
-        print("Executed:")
+        logging.info("\n=== AGENT REPORT ===")
+        logging.info("Sensors:", sensor_data)
+        logging.info("State:", state)
+        logging.info("Remaining:", remaining)
+        logging.info("AI actions:", actions)
+        logging.info("AI duration:", durations)
+        logging.info("Executed:")
         for e in executed:
-            print("-", e)
+            logging.info("-", e)
 
         return executed

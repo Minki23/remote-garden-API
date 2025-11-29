@@ -1,13 +1,13 @@
 import asyncio
 from fastapi import APIRouter
 from agent_services.agent import AgentService
-from agent_app.agent_services.token import TokenService
+from agent_services.token import TokenService
 from agent_models.trigger import ApiTriggerDTO as TriggerDTO
 import logging
 import os
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://app:3000/api")
-
+API_TOKEN = os.getenv("OPENAI_API_KEY")
 service = TokenService(backend_url=BACKEND_URL)
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ async def trigger(trigger: TriggerDTO):
         and starts an asynchronous background task to perform the action without blocking the request.
     """
     token = (await service.register_token(trigger.refresh_token)).access_token
-    agent = AgentService(BACKEND_URL, trigger.garden_id, token)
+    agent = AgentService(API_TOKEN, BACKEND_URL, trigger.garden_id, token)
 
     async def worker():
         try:
