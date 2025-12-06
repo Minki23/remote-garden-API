@@ -1,7 +1,7 @@
 import logging
 import redis
-from api_app.controllers.push.push_notification import PushNotificationController
-from api_app.models.dtos.notifications import NotificationCreateDTO
+from controllers.push.push_notification import PushNotificationController
+from models.dtos.notifications import NotificationCreateDTO
 from controllers.mqtt_handlers.base_device_handler import BaseDeviceHandler
 from core.db_context import async_session_maker
 from core.config import CONFIG
