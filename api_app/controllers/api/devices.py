@@ -15,9 +15,19 @@ async def get_by_garden(service: DeviceServiceDep, esps: EspDeviceForGardenDep):
     """
     Get all devices in a garden.
 
-    Returns a list of devices associated with the garden’s ESPs.
+    Returns a list of devices associated with the garden's ESPs.
     """
     return await service.get_all_for_esps(esps)
+
+
+@router.get("/esp/{esp_id}", response_model=list[DeviceDTO])
+async def get_by_esp(service: DeviceServiceDep, esp: SpecificEspDeviceForGardenDep):
+    """
+    Get all devices for a specific ESP device.
+
+    Returns a list of devices associated with the specified ESP.
+    """
+    return await service.get_all_for_esps([esp])
 
 CONTROL_MAP = {
     "water/on": (DeviceType.WATERER, ControlActionType.WATER_ON),

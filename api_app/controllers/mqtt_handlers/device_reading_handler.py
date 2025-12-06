@@ -1,9 +1,11 @@
 import logging
+from api_app.controllers.push.push_notification import PushNotificationController
+from api_app.models.dtos.notifications import NotificationCreateDTO
 from controllers.mqtt_handlers.base_device_handler import BaseDeviceHandler
 from core.db_context import async_session_maker
 from services.readings import ReadingService
 from repos.readings import ReadingRepository
-from common_db.enums import DeviceType
+from common_db.enums import DeviceType, NotificationType
 from models.dtos.readings import ReadingCreateDTO
 
 logger = logging.getLogger(__name__)
@@ -68,7 +70,7 @@ class DeviceReadingHandler(BaseDeviceHandler):
             logger.warning(f"Could not extract valid mac from topic: {topic}")
             return
 
-        device, _ = await self.process_device_event(
+        device, user = await self.process_device_event(
             topic,
             mac,
             device_type,
@@ -84,3 +86,14 @@ class DeviceReadingHandler(BaseDeviceHandler):
                     dto = ReadingCreateDTO(
                         device_id=device.id, value=str(value))
                     await reading_service.create(dto)
+
+                if device_type == DeviceType.WATER_LEVEL and value < 0.25:
+                    message = f"Low water level ({value:.2f})."
+                    logger.info(f"[ALERT] {message}")
+
+                    notif_dto = NotificationCreateDTO(
+                        user_id=user.id,
+                        message=message,
+                        type=NotificationType.alert,
+                    )
+                    await PushNotificationController.send(notif_dto)

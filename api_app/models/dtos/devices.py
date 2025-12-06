@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 from common_db.enums import DeviceType
 
@@ -5,3 +6,4 @@ from common_db.enums import DeviceType
 class DeviceDTO(BaseModel):
     id: int
     type: DeviceType
+    status: Optional[bool] = None
