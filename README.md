@@ -38,38 +38,37 @@ Całość wspierana jest przez CI/CD, szyfrowanie TLS oraz certyfikaty bezpiecze
 
 ⚙️ Technologie
 🧠 Software
-Warstwa urządzenia (Edge / IoT)
+Warstwa urządzenia
 
-C++17 (ESP32) – obsługa czujników, komunikacja z serwerem, zarządzanie energią.
+-C++17 (ESP32) – obsługa czujników, komunikacja z serwerem, zarządzanie energią.
 
-MQTT – lekki protokół komunikacji IoT (niska latencja, niezawodna transmisja).
+-MQTT – lekki protokół komunikacji IoT (niska latencja, niezawodna transmisja).
 
-Warstwa serwerowa (Backend / API / Dane)
+-Warstwa serwerowa (Backend / API / Dane)
 
-Python 3.11 (FastAPI) – backend obsługujący komunikację z urządzeniami i aplikacją.
+-Python 3.11 (FastAPI) – backend obsługujący komunikację z urządzeniami i aplikacją.
 
-PostgreSQL – relacyjna baza danych do przechowywania pomiarów, konfiguracji i logów.
+-PostgreSQL – relacyjna baza danych do przechowywania pomiarów, konfiguracji i logów.
 
-AI/ML – moduły predykcyjne i automatyzacja sterowania na podstawie danych pomiarowych.
+-AI – wykorzystanie gotowego modelu AI do sugestii akcji.
 
-Docker – konteneryzacja i automatyzacja wdrożeń (CI/CD).
+-Docker – konteneryzacja i automatyzacja wdrożeń (CI/CD).
 
-Warstwa kliencka (Aplikacja mobilna)
+-Warstwa kliencka (Aplikacja mobilna)
 
-Kotlin (Jetpack Compose) – natywna aplikacja mobilna umożliwiająca podgląd danych i sterowanie systemem.
+-Kotlin (Jetpack Compose) – natywna aplikacja mobilna umożliwiająca podgląd danych i sterowanie systemem.
 
 🔩 Hardware
-Komponent	Opis
-FireBeetle 2 ESP32-S3-U	Mikrokontroler z WiFi, Bluetooth i kamerą OV2640
-BH1750	Czujnik natężenia światła (lux)
-DHT11	Czujnik temperatury i wilgotności
-MOD-01588	Czujnik wilgotności gleby
-Seeedstudio 101020635	Czujnik poziomu wody
-Wentylator 12V 80×80×10,8 mm	Wentylacja i chłodzenie komponentów
-Pompa wodna 6V GRL-14164	Automatyczne podlewanie
-Moduł przekaźników (4 kanały)	Sterowanie urządzeniami zasilanymi wyższym napięciem
-Zasilacz 12V/3A, przetwornica XL4015	Stabilne zasilanie układu
-Technologia druku 3D	Dedykowana obudowa odporna na warunki szklarniowe
+-FireBeetle 2 ESP32-S3-U	Mikrokontroler z WiFi, Bluetooth i kamerą OV2640
+-BH1750	Czujnik natężenia światła (lux)
+-DHT11	Czujnik temperatury i wilgotności
+-MOD-01588	Czujnik wilgotności gleby
+-Seeedstudio 101020635	Czujnik poziomu wody
+-Wentylator 12V 80×80×10,8 mm	Wentylacja i chłodzenie komponentów
+-Pompa wodna 6V GRL-14164	Automatyczne podlewanie
+-Moduł przekaźników (4 kanały)	Sterowanie urządzeniami zasilanymi wyższym napięciem
+-Zasilacz 12V/3A, przetwornica XL4015	Stabilne zasilanie układu
+-Technologia druku 3D	Dedykowana obudowa odporna na warunki szklarniowe
 
 🔐 Bezpieczeństwo
 
