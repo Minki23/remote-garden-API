@@ -1,13 +1,13 @@
 🌱 SmartGrow – Inteligentny system IoT do monitorowania i zarządzania warunkami środowiskowymi w szklarni
 👩‍💻 Zespół projektu
 
-Michał Szymczak
+-Michał Szymczak
 
-Konrad Orzechowski
+-Konrad Orzechowski
 
-Igor Wojtun
+-Igor Wojtun
 
-Filip Półtoraczyk
+-Filip Półtoraczyk
 
 Opiekun zespołu: dr inż. Michał Kędziora
 
@@ -16,23 +16,23 @@ Opiekun zespołu: dr inż. Michał Kędziora
 SmartGrow to inteligentny system IoT przeznaczony do zdalnego monitorowania i zarządzania warunkami środowiskowymi w nowoczesnych szklarniach i obiektach uprawowych.
 System umożliwia:
 
-ciągły monitoring temperatury, wilgotności i natężenia światła,
-
-automatyczne sterowanie urządzeniami wykonawczymi (np. pompą, wentylacją, oświetleniem),
-
-analizę danych w czasie rzeczywistym z wykorzystaniem algorytmów AI/ML,
-
-zdalny dostęp przez aplikację mobilną.
-
-Projekt łączy elementy automatyki, IoT oraz sztucznej inteligencji, tworząc zintegrowane rozwiązanie, które optymalizuje zużycie zasobów (wody, energii) i zwiększa efektywność upraw.
+    ciągły monitoring temperatury, wilgotności i natężenia światła,
+    
+    automatyczne sterowanie urządzeniami wykonawczymi (np. pompą, wentylacją, oświetleniem),
+    
+    analizę danych w czasie rzeczywistym z wykorzystaniem gotowego modelu AI,
+    
+    zdalny dostęp przez aplikację mobilną.
+    
+    Projekt łączy elementy automatyki, IoT oraz sztucznej inteligencji, tworząc zintegrowane rozwiązanie, które optymalizuje zużycie zasobów (wody, energii) i zwiększa efektywność upraw.
 
 Dzięki aplikacji mobilnej użytkownik może w czasie rzeczywistym:
 
-podglądać parametry środowiskowe,
-
-oglądać obraz z kamery,
-
-sterować urządzeniami ręcznie lub automatycznie.
+    podglądać parametry środowiskowe,
+    
+    oglądać obraz z kamery,
+    
+    sterować urządzeniami ręcznie lub automatycznie.
 
 Całość wspierana jest przez CI/CD, szyfrowanie TLS oraz certyfikaty bezpieczeństwa, zapewniające niezawodność i ochronę danych.
 
@@ -59,23 +59,17 @@ Warstwa urządzenia
 -Kotlin (Jetpack Compose) – natywna aplikacja mobilna umożliwiająca podgląd danych i sterowanie systemem.
 
 🔩 Hardware
--FireBeetle 2 ESP32-S3-U	Mikrokontroler z WiFi, Bluetooth i kamerą OV2640
--BH1750	Czujnik natężenia światła (lux)
--DHT11	Czujnik temperatury i wilgotności
--MOD-01588	Czujnik wilgotności gleby
--Seeedstudio 101020635	Czujnik poziomu wody
--Wentylator 12V 80×80×10,8 mm	Wentylacja i chłodzenie komponentów
--Pompa wodna 6V GRL-14164	Automatyczne podlewanie
--Moduł przekaźników (4 kanały)	Sterowanie urządzeniami zasilanymi wyższym napięciem
--Zasilacz 12V/3A, przetwornica XL4015	Stabilne zasilanie układu
--Technologia druku 3D	Dedykowana obudowa odporna na warunki szklarniowe
+| Komponent                                | Opis                                                 |
+| ---------------------------------------- | ---------------------------------------------------- |
+|   FireBeetle 2 ESP32-S3-U                | Mikrokontroler z WiFi, Bluetooth i kamerą OV2640     |
+|   BH1750                                 | Czujnik natężenia światła (lux)                      |
+|   DHT11                                  | Czujnik temperatury i wilgotności                    |
+|   MOD-01588                              | Czujnik wilgotności gleby                            |
+|   Seeedstudio 101020635                  | Czujnik poziomu wody                                 |
+|   Wentylator 12V 80×80×10,8 mm           | Wentylacja i chłodzenie komponentów                  |
+|   Pompa wodna 6V GRL-14164               | Automatyczne podlewanie                              |
+|   Moduł przekaźników (4 kanały)          | Sterowanie urządzeniami zasilanymi wyższym napięciem |
+|   Zasilacz 12V/3A, przetwornica XL4015   | Stabilne zasilanie układu                            |
+|   Technologia druku 3D                   | Dedykowana obudowa odporna na warunki szklarniowe    |
 
-🔐 Bezpieczeństwo
 
-Komunikacja szyfrowana TLS
-
-Autoryzacja oparta na certyfikatach
-
-Separacja środowisk (DEV / PROD)
-
-Regularne aktualizacje w ramach CI/CD
