@@ -1,0 +1,208 @@
+workspace "SmartGrow" "C4 Model"  {
+
+    !identifiers hierarchical
+
+    model {
+        
+        u = person "User" {
+            description "Owner of the garden who monitors and controls devices via mobile app."
+        }
+
+        
+        ma = softwareSystem "Mobile App" {
+            description "Android application enabling users to remotely monitor environmental parameters."
+        
+            backend = container "Backend API"{
+                description "Backend written in FastAPI that handles API requests, coordinates devices, and stores data."
+        
+                
+                nginx = component "nginx"{
+                    description "NGINX acts as a secure reverse proxy, terminating HTTPS traffic and routing encrypted client requests to internal services such as the API, admin panel, and camera modules."
+                }
+                
+                controler = component "api"{
+                    description "Serves as the central microservice backend of the garden management system. It orchestrates communication between users, IoT devices, and the automation layer, handling requests, device commands, and system logic."
+                }
+                
+                csr = component "csr"{
+                    description "Handles certificate signing requests, managing secure key exchange and communication between system components."
+                }
+                
+                scheduler = component "scheduler"{
+                    description "Manages scheduled and asynchronous tasks, triggering periodic jobs such as device control routines, data processing, and system maintenance tasks."
+                }
+                
+                agent = component "agent"{
+                    description "Performs intelligent processing and external API requests, including communication with AI services such as ChatGPT to support automation."
+                }
+                
+                nginx -> controler "Forwards HTTP requests"
+                controler -> csr "Certificate"
+                scheduler -> agent "Trigers"
+                agent -> controler "Analisys taken data"
+            }
+            
+            dbredis = container "Redis Database"{
+                description "A fast, in-memory, non-relational data store used as a message broker for Celery, handling asynchronous job queues and temporary operational data."
+            }
+            
+            dbpostgre = container "PostgreSQL Database"{
+                description "A reliable, relational, and persistent database storing users, gardens, devices, sensors, configurations, and long-term environmental measurements."
+            }
+            
+            mqttbrocker = container "MQTT Brocker"{
+                description "A lightweight message broker using the MQTT protocol to facilitate communication between the Backend API and IoT devices."
+            }
+            
+            agentai = container "ChatGPT"{
+                description "Perform content analysis and support intelligent automation features. It sends requests to the ChatGPT endpoint and processes the returned results for use within the application."
+            }
+            
+            uiapp = container "UI Moble APP"{
+                description "A user-facing mobile interface that allows garden owners to monitor environmental conditions, control devices, and receive notifications"
+            }
+            
+            cloudsecurity = container "Google Cloud"{
+                description "Cloud platform providing push notification delivery through Firebase Cloud Messaging and supporting user authentication via Google Sign-In."
+            }
+            
+        }
+
+    
+
+        hd = softwareSystem  "IoT Device" {
+            description "IoT device providing environmental sensor data and accepting control commands."
+            
+            esp32 = container "ESP32 S3"{
+                description "microcontroller responsible for reading sensor data, executing control logic, and communicating with the system backend. It handles Wi-Fi connectivity, publishes telemetry via MQTT, receives device commands."
+                
+                sram = component "SRAM"{
+                    description "On-chip static RAM used as the primary working memory for program execution, variable storage, and real-time processing tasks."
+                }
+                
+                rom = component "ROM"{
+                    description "Built-in read-only memory containing the low-level bootloader and essential system routines required for initializing and starting the microcontroller."
+                }
+                
+                psram = component "PSRAM"{
+                    description "Optional external pseudo-static RAM used to extend the available memory, primarily utilized for buffering camera frames, image processing, and other memory-intensive operations."
+                }
+                
+                spi = component "SPI Flash"{
+                    description "Non-volatile external storage connected via the SPI bus, used to store the firmware, configuration data, and other persistent resources required for the microcontroller to operate."
+                }
+                
+                
+            }
+            atomizer = container "Atomizer"{
+            }
+            
+            fanner = container "Fan"{
+            }
+            
+            waterp = container "Water Pump"{
+            }
+            
+            heatp = container "DHT11"{
+            }
+            
+            lightint = container "Light Intensity"{
+            }
+            
+            signalstr = container "Signal Strenght"{
+            }
+            
+            soilm = container "Soil Moisture"{
+            }
+            
+            waterl = container "Water Level"{
+            }
+            
+            camera = container "Camera"{
+            }
+            
+            
+        }
+        
+        u -> ma "Interact"
+        u -> ma.uiapp "Interaction"
+        ma.uiapp -> ma.backend "HTTP"
+        ma.uiapp -> ma.cloudsecurity "HTTP"
+        ma.backend -> ma.cloudsecurity "HTTP"
+        ma.backend -> ma.dbredis ""
+        ma.backend -> ma.dbpostgre ""
+        ma.backend -> ma.mqttbrocker ""
+        ma.backend -> ma.agentai "ChatGPT API"
+        
+        
+        
+        
+        ma -> hd "Wi-Fi"
+        ma -> hd.esp32 "MQTT"
+        hd.esp32 -> hd.atomizer "GPIO"
+        hd.esp32 -> hd.fanner "GPIO"
+        hd.esp32 -> hd.waterp "GPIO"
+        hd.esp32 -> hd.heatp "GPIO"
+        hd.esp32 -> hd.lightint "IC2"
+        hd.esp32 -> hd.signalstr "WiFi Module"
+        hd.esp32 -> hd.soilm "ADC2"
+        hd.esp32 -> hd.waterl "IC2"
+        hd.esp32 -> hd.camera "SCCB and GPIO"
+        
+        
+    }
+
+    views {
+        systemContext ma "Diagram1" {
+            include *
+            autoLayout lr
+        }
+        
+        container ma "Diagram2"{
+            include *
+            autoLayout 
+        }
+        
+        container hd "Diagram3"{
+            include *
+            autoLayout 
+        }
+        
+        component ma.backend "Diagram4"{
+            include *
+            autoLayout lr
+        }
+        
+        component hd.esp32 "Diagram5"{
+            include *
+            autoLayout 
+        }
+
+
+        styles {
+            element "Element" {
+                color #f88728
+                stroke #f88728
+                strokeWidth 7
+                shape roundedbox
+            }
+            element "Person" {
+                shape person
+            }
+            element "Database" {
+                shape cylinder
+            }
+            element "Boundary" {
+                strokeWidth 5
+            }
+            relationship "Relationship" {
+                thickness 4
+            }
+        }
+    }
+
+    configuration {
+        scope none
+    }
+
+}
